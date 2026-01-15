@@ -39,11 +39,27 @@ pip install git+https://github.com/redkeysh/wisp.git[all]
 
 For local development, set up your environment and run checks:
 
+### Quick Start (Cross-Platform)
+
 ```bash
 # Setup development environment
-./scripts/setup-dev.sh
+python scripts/setup-dev.py
 
-# Or manually:
+# Run checks locally (replicates CI)
+python scripts/dev.py ci        # Run full CI checks
+python scripts/dev.py lint      # Run linter only
+python scripts/dev.py format     # Format code
+python scripts/dev.py check      # Run lint + format checks
+python scripts/dev.py test       # Run tests
+python scripts/dev.py test-cov   # Run tests with coverage
+```
+
+### Using Makefile (Linux/macOS/Git Bash)
+
+If you have `make` installed:
+
+```bash
+# Setup development environment
 make install-dev
 make install-test
 
@@ -52,10 +68,15 @@ make ci              # Run lint + format + tests
 make lint            # Run linter only
 make format          # Format code
 make test-cov        # Run tests with coverage
-./scripts/dev.sh     # Alternative: use dev script
+make help            # Show all available targets
+```
 
-# See all available targets
-make help
+### Using Shell Scripts (Linux/macOS/Git Bash)
+
+```bash
+./scripts/setup-dev.sh   # Setup environment
+./scripts/dev.sh          # Run CI checks
+./scripts/dev.sh lint     # Run specific command
 ```
 
 ## Documentation
