@@ -20,8 +20,21 @@ class CorrelationFilter(logging.Filter):
 
 
 def setup_logging(config: AppConfig) -> None:
-    """Set up structured logging with module awareness."""
-    log_level = getattr(logging, config.log_level, logging.INFO)
+    """Set up structured logging with module awareness.
+    
+    Log levels can be controlled via environment variables:
+    - LOG_LEVEL: Root log level (default: INFO)
+    - LOG_LEVEL_WISP_FRAMEWORK: Wisp Framework log level (default: same as LOG_LEVEL)
+    """
+    import os
+    
+    # Get root log level
+    root_log_level_str = config.log_level
+    root_log_level = getattr(logging, root_log_level_str, logging.INFO)
+    
+    # Get Wisp Framework specific log level (if set)
+    wisp_log_level_str = os.getenv("LOG_LEVEL_WISP_FRAMEWORK", root_log_level_str).upper()
+    wisp_log_level = getattr(logging, wisp_log_level_str, root_log_level)
 
     # Create formatter
     formatter = logging.Formatter(
@@ -31,18 +44,21 @@ def setup_logging(config: AppConfig) -> None:
 
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(log_level)
+    console_handler.setLevel(root_log_level)
     console_handler.setFormatter(formatter)
     console_handler.addFilter(CorrelationFilter())
 
     # Root logger
     root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(root_log_level)
     root_logger.addHandler(console_handler)
 
     # Suppress noisy loggers
     logging.getLogger("discord").setLevel(logging.WARNING)
     logging.getLogger("discord.http").setLevel(logging.WARNING)
+    
+    # Set Wisp Framework logger level (allows suppressing WF logs separately)
+    logging.getLogger("wisp_framework").setLevel(wisp_log_level)
 
 
 def get_logger(name: str) -> logging.Logger:

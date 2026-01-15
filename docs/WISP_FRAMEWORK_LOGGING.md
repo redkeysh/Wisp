@@ -94,3 +94,56 @@ Example output:
 ```
 
 Your Echo bot logs will appear with `[echo]` or `[your_module_name]` in the name field, making them easy to distinguish.
+
+## Configuring Log Levels
+
+### Global Log Level
+
+Set the root log level via `LOG_LEVEL` environment variable:
+
+```bash
+# In .env.local or environment
+LOG_LEVEL=INFO    # Show INFO, WARNING, ERROR, CRITICAL
+LOG_LEVEL=WARNING # Show only WARNING, ERROR, CRITICAL
+LOG_LEVEL=ERROR   # Show only ERROR, CRITICAL
+LOG_LEVEL=DEBUG   # Show everything (very verbose)
+```
+
+### Suppress Wisp Framework Logs
+
+To suppress Wisp Framework logs while keeping your bot's logs at INFO:
+
+```bash
+# Set your bot's log level
+LOG_LEVEL=INFO
+
+# Suppress Wisp Framework logs to WARNING or ERROR
+LOG_LEVEL_WISP_FRAMEWORK=WARNING
+```
+
+This allows you to:
+- See your Echo bot's INFO logs
+- Hide Wisp Framework's INFO/DEBUG logs
+- Still see Wisp Framework warnings/errors
+
+### Example Configuration
+
+**`.env.local` for production:**
+```bash
+LOG_LEVEL=INFO
+LOG_LEVEL_WISP_FRAMEWORK=WARNING
+```
+
+**`.env.local` for development:**
+```bash
+LOG_LEVEL=DEBUG
+LOG_LEVEL_WISP_FRAMEWORK=INFO
+```
+
+### Available Log Levels
+
+- `DEBUG` - Most verbose (all logs)
+- `INFO` - Default (informational messages)
+- `WARNING` - Warnings and above
+- `ERROR` - Errors and critical issues only
+- `CRITICAL` - Only critical failures
