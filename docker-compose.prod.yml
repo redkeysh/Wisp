@@ -5,6 +5,8 @@ services:
     image: postgres:16-alpine
     container_name: discord_bot_db_prod
     environment:
+      # ⚠️ SECURITY WARNING: You MUST set strong, unique passwords via environment variables!
+      # Never use default passwords or commit passwords to version control!
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}

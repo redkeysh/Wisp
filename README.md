@@ -222,6 +222,8 @@ pip install wisp-framework[db]
 DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/discord_bot
 ```
 
+> **⚠️ SECURITY WARNING**: The default passwords in `docker-compose.yml` are for development only. **You MUST change all database passwords** before deploying to production. Never use default passwords in production environments!
+
 3. Run migrations:
 ```bash
 alembic upgrade head
@@ -280,6 +282,8 @@ async def setup(self, bot, ctx):
 
 ### Docker Deployment
 
+> **⚠️ SECURITY WARNING**: The default database passwords in `docker-compose.yml` are for development only. **You MUST change all database passwords** before deploying to production. Set strong, unique passwords via environment variables in `.env.prod` and never commit passwords to version control!
+
 **Development:**
 ```bash
 docker-compose up -d
@@ -306,7 +310,8 @@ pip install wisp-framework[all]
 2. Set up environment:
 ```bash
 cp .env.prod.example .env.prod
-# Edit .env.prod
+# Edit .env.prod and set strong, unique database passwords
+# ⚠️ Never use default passwords from docker-compose.yml in production!
 ```
 
 3. Run migrations (if using database):

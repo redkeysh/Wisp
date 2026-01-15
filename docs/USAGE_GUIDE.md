@@ -238,6 +238,8 @@ class DataStorageModule(Module):
 
 ### Using the Database
 
+> **⚠️ SECURITY WARNING**: Before using the database, ensure you have changed all default passwords from the repository's `docker-compose.yml` files. Never use default passwords in production!
+
 ```python
 from typing import Any
 import discord

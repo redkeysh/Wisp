@@ -5,6 +5,8 @@ services:
     image: postgres:16-alpine
     container_name: discord_bot_db
     environment:
+      # ⚠️ SECURITY WARNING: Default passwords are for development only!
+      # You MUST change POSTGRES_PASSWORD before deploying to production!
       POSTGRES_USER: ${POSTGRES_USER:-discord_bot}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-discord_bot}
       POSTGRES_DB: ${POSTGRES_DB:-discord_bot}
