@@ -485,6 +485,6 @@ if __name__ == "__main__":
 
 ## Next Steps
 
-- Read the [Module Development Guide](MODULE_DEVELOPMENT.md) for best practices
-- Check the [Deployment Guide](DEPLOYMENT.md) for production deployment
+- Read the [[Module-Development]] guide for best practices
+- Check the [[Deployment-Guide]] for production deployment
 - Review the framework source code for more examples

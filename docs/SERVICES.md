@@ -279,7 +279,7 @@ class DependentService(BaseService):
 
 ## Service Configuration
 
-Services are configured via `AppConfig` and environment variables. See [Configuration Reference](CONFIGURATION.md) for details.
+Services are configured via `AppConfig` and environment variables. See [[Configuration-Reference]] for details.
 
 ## Next Steps
 

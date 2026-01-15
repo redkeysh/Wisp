@@ -238,7 +238,7 @@ Validate that all required environment variables are present.
 
 ### Environment Variables
 
-See [Configuration Reference](CONFIGURATION.md) for complete list.
+See [[Configuration-Reference]] for complete list.
 
 ---
 
@@ -286,7 +286,7 @@ List all registered service names.
 
 ### Available Services
 
-See [Services Documentation](SERVICES.md) for detailed service documentation.
+See [[Services-Documentation]] for detailed service documentation.
 
 ---
 

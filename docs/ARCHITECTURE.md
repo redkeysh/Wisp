@@ -286,7 +286,7 @@ class MyService(BaseService):
 
 ### Creating Custom Modules
 
-See [Module Development Guide](MODULE_DEVELOPMENT.md).
+See [[Module-Development]].
 
 ### Extending Bot Functionality
 

@@ -341,7 +341,7 @@ Increase resources:
 
 ## Troubleshooting
 
-See [Troubleshooting Guide](TROUBLESHOOTING.md) for common deployment issues.
+See [[Troubleshooting]] for common deployment issues.
 
 ## Next Steps
 
