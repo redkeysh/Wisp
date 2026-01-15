@@ -22,16 +22,16 @@ Install directly from GitHub:
 
 ```bash
 # Basic installation
-pip install git+https://github.com/yourusername/wisp.git
+pip install git+https://github.com/redkeysh/wisp.git
 
 # With database support
-pip install git+https://github.com/yourusername/wisp.git[db]
+pip install git+https://github.com/redkeysh/wisp.git[db]
 
 # With all extras
-pip install git+https://github.com/yourusername/wisp.git[all]
+pip install git+https://github.com/redkeysh/wisp.git[all]
 
 # Pin to specific version
-pip install git+https://github.com/yourusername/wisp.git@v1.0.0
+pip install git+https://github.com/redkeysh/wisp.git@v1.0.0
 ```
 
 #### From PyPI (If Published)
@@ -51,7 +51,7 @@ pip install wisp-framework[all]
 
 ```bash
 # Clone and install in editable mode
-git clone https://github.com/yourusername/wisp.git
+git clone https://github.com/redkeysh/wisp.git
 cd wisp
 pip install -e ".[db,redis,all]"
 ```
