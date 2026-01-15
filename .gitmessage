@@ -1,0 +1,8 @@
+# Commit message format
+# Keep it simple and concise - one line summary, optional body
+
+# Examples:
+# feat: add git dependency updates
+# fix: SQLAlchemy compatibility issue
+# docs: update README
+# refactor: simplify dependency checking
