@@ -65,7 +65,7 @@ class AppConfig:
 
     def _get_bool(self, key: str, default: bool = False) -> bool:
         """Get boolean value from environment variable.
-        
+
         If the environment variable is not set, returns the default.
         If set to empty string, treats as False (explicitly disabled).
         """

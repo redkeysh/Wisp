@@ -21,7 +21,7 @@ class CorrelationFilter(logging.Filter):
 
 def setup_logging(config: AppConfig) -> None:
     """Set up structured logging with module awareness.
-    
+
     Log levels can be controlled via environment variables:
     - LOG_LEVEL: Root log level (default: INFO)
     - LOG_LEVEL_WISP_FRAMEWORK: Wisp Framework log level (default: same as LOG_LEVEL)
