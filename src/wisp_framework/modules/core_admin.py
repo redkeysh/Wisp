@@ -172,14 +172,14 @@ class CoreAdminModule(Module):
                     description=f"Failed to sync commands: {str(e)}"
                 )
                 await ctx.send(embed=embed)
-        
+
         # Register prefixed command explicitly
         sync_cmd = commands.Command(
             sync_prefixed_command,
-            name="sync",
-            help="Sync bot commands (owner only)"
+            name="sync"
         )
-        sync_cmd.add_check(commands.is_owner().predicate)
+        # Add owner check
+        sync_cmd.checks.append(commands.is_owner().predicate)
         bot.add_command(sync_cmd)
 
         @tree.command(name="botinfo", description="Show bot information")
