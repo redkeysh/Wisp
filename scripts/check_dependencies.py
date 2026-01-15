@@ -534,6 +534,34 @@ def main():
             if result["constraint"]:
                 print(f"  └─ Constraint: {result['constraint']}")
     
+    # Print git dependencies if any
+    if git_dependencies:
+        print()
+        print("=" * 80)
+        print("GIT DEPENDENCIES")
+        print("=" * 80)
+        print()
+        print(f"{'Package':<30} {'Source':<50}")
+        print("-" * 80)
+        
+        git_groups = {}
+        for git_dep in git_dependencies:
+            group = git_dep["group"]
+            if group not in git_groups:
+                git_groups[group] = []
+            git_groups[group].append(git_dep)
+        
+        for group_name in sorted(git_groups.keys()):
+            if len(git_groups) > 1:
+                print(f"\n{group_name.upper()}:")
+            for git_dep in sorted(git_groups[group_name], key=lambda x: x["package"]):
+                package = git_dep["package"]
+                source = git_dep["source"]
+                # Truncate long URLs for display
+                if len(source) > 50:
+                    source = source[:47] + "..."
+                print(f"{package:<30} {source:<50}")
+    
     print()
     print("=" * 80)
     print("SUMMARY")
@@ -549,10 +577,15 @@ def main():
     up_to_date = status_counts.get("up-to-date", 0)
     unknown = status_counts.get("unknown", 0)
     
-    print(f"Total dependencies: {total}")
-    print(f"✅ Up-to-date: {up_to_date}")
-    print(f"⚠️  Outdated: {outdated}")
-    print(f"❓ Unknown: {unknown}")
+    print(f"PyPI dependencies: {total}")
+    print(f"  ✅ Up-to-date: {up_to_date}")
+    print(f"  ⚠️  Outdated: {outdated}")
+    print(f"  ❓ Unknown: {unknown}")
+    
+    if git_dependencies:
+        print(f"\nGit dependencies: {len(git_dependencies)}")
+        for git_dep in git_dependencies:
+            print(f"  - {git_dep['package']} ({git_dep['group']})")
     
     # Prepare updates
     updates = []
