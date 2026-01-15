@@ -2,6 +2,8 @@
 
 Common issues and solutions for the Wisp Framework.
 
+> **See also:** [[Configuration-Reference]] | [[Deployment-Guide]] | [[API-Reference]]
+
 ## Table of Contents
 
 - [Installation Issues](#installation-issues)
@@ -295,6 +297,6 @@ When reporting issues, include:
 
 ## Next Steps
 
-- Review [Configuration Reference](CONFIGURATION.md) for configuration details
-- Check [Deployment Guide](DEPLOYMENT.md) for deployment issues
-- See [API Reference](API_REFERENCE.md) for API details
+- Review [[Configuration-Reference]] for configuration details
+- Check [[Deployment-Guide]] for deployment issues
+- See [[API-Reference]] for API details

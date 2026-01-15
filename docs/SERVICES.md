@@ -2,6 +2,8 @@
 
 Complete documentation for all framework services.
 
+> **See also:** [[API-Reference]] | [[Module-Development]] | [[Architecture-Overview]]
+
 ## Table of Contents
 
 - [Service Overview](#service-overview)
@@ -281,6 +283,6 @@ Services are configured via `AppConfig` and environment variables. See [Configur
 
 ## Next Steps
 
-- See [API Reference](API_REFERENCE.md) for detailed API documentation
-- Check [Architecture Overview](ARCHITECTURE.md) for service architecture
-- Review [Module Development Guide](MODULE_DEVELOPMENT.md) for using services in modules
+- See [[API-Reference]] for detailed API documentation
+- Check [[Architecture-Overview]] for service architecture
+- Review [[Module-Development]] for using services in modules

@@ -2,6 +2,8 @@
 
 Complete guide to creating, developing, and maintaining modules for the Wisp Framework.
 
+> **See also:** [[API-Reference]] | [[Examples]] | [[Services-Documentation]]
+
 ## Table of Contents
 
 - [Module Basics](#module-basics)
@@ -541,7 +543,7 @@ class ExampleModule(Module):
 
 ## Next Steps
 
-- Review [API Reference](API_REFERENCE.md) for detailed API documentation
-- Check [Examples](EXAMPLES.md) for more code samples
-- See [Services Documentation](SERVICES.md) for service details
-- Read [Architecture Overview](ARCHITECTURE.md) for design context
+- Review [[API-Reference]] for detailed API documentation
+- Check [[Examples]] for more code samples
+- See [[Services-Documentation]] for service details
+- Read [[Architecture-Overview]] for design context

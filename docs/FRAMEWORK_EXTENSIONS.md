@@ -1,6 +1,8 @@
-# Framework Extensions Guide
+# Framework Extensions Summary
 
-This guide covers all the extensions and utilities available to make bot development easier.
+Quick reference guide for framework extensions and utilities.
+
+> **See also:** [[Framework-Extensions]] | [[Module-Development]] | [[Examples]]
 
 ## Quick Reference
 

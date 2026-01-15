@@ -2,6 +2,8 @@
 
 Complete examples and tutorials for using the Wisp Framework.
 
+> **See also:** [[Module-Development]] | [[API-Reference]] | [[Framework-Extensions]]
+
 ## Table of Contents
 
 - [Basic Bot](#basic-bot)
@@ -404,6 +406,6 @@ class DeleteModule(Module):
 
 ## Next Steps
 
-- See [Module Development Guide](MODULE_DEVELOPMENT.md) for more examples
-- Check [API Reference](API_REFERENCE.md) for API details
-- Review [Framework Extensions](EXTENSIONS.md) for utility examples
+- See [[Module-Development]] for more examples
+- Check [[API-Reference]] for API details
+- Review [[Framework-Extensions]] for utility examples
