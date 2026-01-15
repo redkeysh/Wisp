@@ -3,6 +3,7 @@
 from typing import Any
 
 import discord
+from discord.ext import commands
 
 from wisp_framework.module import Module
 from wisp_framework.utils.decorators import handle_errors
@@ -69,3 +70,54 @@ class PingModule(Module):
                 )
 
             await respond_success(interaction, f"Pong! Latency: {latency}ms", embed=embed)
+
+        # Prefixed ping command
+        async def ping_prefixed_command(ctx: commands.Context) -> None:
+            """Ping command handler (prefixed)."""
+            latency = round(bot.latency * 1000)
+
+            # Determine status color based on latency
+            if latency < 100:
+                status = "Excellent"
+                color_type = "success"
+            elif latency < 200:
+                status = "Good"
+                color_type = "info"
+            elif latency < 500:
+                status = "Fair"
+                color_type = "warning"
+            else:
+                status = "Poor"
+                color_type = "error"
+
+            # Create appropriate embed
+            if color_type == "success":
+                embed = EmbedBuilder.success(
+                    title="Pong! 🏓",
+                    description=f"Latency: **{latency}ms**\nStatus: {status}",
+                    fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
+                )
+            elif color_type == "info":
+                embed = EmbedBuilder.info(
+                    title="Pong! 🏓",
+                    description=f"Latency: **{latency}ms**\nStatus: {status}",
+                    fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
+                )
+            elif color_type == "warning":
+                embed = EmbedBuilder.warning(
+                    title="Pong! 🏓",
+                    description=f"Latency: **{latency}ms**\nStatus: {status}",
+                    fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
+                )
+            else:
+                embed = EmbedBuilder.error(
+                    title="Pong! 🏓",
+                    description=f"Latency: **{latency}ms**\nStatus: {status}",
+                    fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
+                )
+
+            await ctx.send(embed=embed)
+
+        # Register prefixed command
+        ping_cmd = commands.Command(ping_prefixed_command, name="ping")
+        bot.add_command(ping_cmd)

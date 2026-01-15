@@ -50,6 +50,10 @@ class WispBot(commands.Bot):
         self.started_at = datetime.utcnow()
         logger.info("Bot setup hook called")
 
+        # Load modules globally before bot starts processing messages
+        # This ensures prefixed commands are registered early
+        await self.module_registry.load_enabled_modules(self, self.ctx, guild_id=None)
+
         # Sync commands if configured
         if self.config.sync_on_startup:
             try:
@@ -63,7 +67,7 @@ class WispBot(commands.Bot):
         logger.info(f"Bot ready: {self.user} (ID: {self.user.id if self.user else None})")
         logger.info(f"Connected to {len(self.guilds)} guild(s)")
 
-        # Load modules for each guild
+        # Load modules for each guild (for guild-specific features)
         for guild in self.guilds:
             await self.module_registry.load_enabled_modules(self, self.ctx, guild.id)
 
