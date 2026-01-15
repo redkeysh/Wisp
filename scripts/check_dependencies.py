@@ -108,7 +108,15 @@ def get_latest_git_tag(git_url: str) -> Optional[str]:
                             
                             if versions:
                                 versions.sort(key=lambda x: tuple(map(int, x[0].split('.'))), reverse=True)
-                                return versions[0][1]
+                                # Return original tag name preserving 'v' prefix if present
+                                latest_tag = versions[0][1]
+                                # Ensure we preserve the 'v' prefix if the original tags had it
+                                if not latest_tag.startswith('v') and any(t[1].startswith('v') for t in versions[:3]):
+                                    # Check if most tags have 'v' prefix, if so add it
+                                    v_prefixed_count = sum(1 for t in versions[:3] if t[1].startswith('v'))
+                                    if v_prefixed_count >= 2:
+                                        latest_tag = 'v' + latest_tag.lstrip('v')
+                                return latest_tag
                 except (URLError, KeyError, json.JSONDecodeError):
                     pass
         
@@ -279,6 +287,107 @@ def format_status(status: str) -> str:
         "unknown": "❓"
     }
     return f"{status_map.get(status, '❓')} {status.upper()}"
+
+
+def update_git_dependencies_in_pyproject(
+    pyproject_path: Path,
+    git_updates: List[Dict[str, str]],
+    dry_run: bool = True,
+    is_poetry: bool = False,
+) -> bool:
+    """Update git dependencies with latest tags in pyproject.toml.
+    
+    Args:
+        pyproject_path: Path to pyproject.toml
+        git_updates: List of git update dictionaries with 'package', 'group', 'git_url', 'old_tag', 'new_tag'
+        dry_run: If True, don't actually write changes
+        is_poetry: Whether this is Poetry format
+        
+    Returns:
+        True if updates were made, False otherwise
+    """
+    if not git_updates:
+        return False
+    
+    # Read current file
+    with open(pyproject_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    original_content = content
+    
+    if is_poetry:
+        # Poetry format: package = {git = "url", tag = "v1.2.3"}
+        # Process each git update
+        for update in git_updates:
+            package_name = update["package"]
+            git_url = update["git_url"]
+            new_tag = update["new_tag"]
+            
+            # Pattern to match: package_name = {git = "url"}
+            # Handle both quoted and unquoted package names
+            pattern = rf'(["\']?{re.escape(package_name)}["\']?\s*=\s*{{)([^}}]*git\s*=\s*["\'])([^"\']+)(["\'])([^}}]*)(}})'
+            
+            def replace_git_dep(match):
+                prefix = match.group(1)  # package_name = {
+                git_prefix = match.group(2)  # git = "
+                url = match.group(3)  # actual URL
+                quote = match.group(4)  # closing quote
+                middle = match.group(5)  # anything between git URL and closing brace
+                suffix = match.group(6)  # closing brace
+                
+                # Check if tag already exists
+                if re.search(r'tag\s*=', middle, re.IGNORECASE):
+                    # Update existing tag
+                    middle = re.sub(
+                        r'(tag\s*=\s*["\']?)([^"\']+)(["\']?)',
+                        rf'\1{new_tag}\3',
+                        middle,
+                        flags=re.IGNORECASE
+                    )
+                else:
+                    # Add tag - always add comma before tag
+                    if middle.strip():
+                        # There's already content, add comma before tag
+                        middle = middle.rstrip() + f', tag = "{new_tag}"'
+                    else:
+                        # No existing content, add comma after git URL quote
+                        middle = f', tag = "{new_tag}"'
+                
+                return f"{prefix}{git_prefix}{url}{quote}{middle}{suffix}"
+            
+            content = re.sub(pattern, replace_git_dep, content, flags=re.MULTILINE)
+    
+    if dry_run:
+        # Show diff
+        print("\n" + "=" * 80)
+        print("PROPOSED GIT DEPENDENCY UPDATES (DRY RUN)")
+        print("=" * 80)
+        print()
+        
+        original_lines = original_content.splitlines()
+        new_lines = content.splitlines()
+        
+        changes_found = False
+        for i, (old_line, new_line) in enumerate(zip(original_lines, new_lines), 1):
+            if old_line != new_line:
+                changes_found = True
+                print(f"Line {i}:")
+                print(f"  - {old_line}")
+                print(f"  + {new_line}")
+                print()
+        
+        if not changes_found:
+            print("Summary of git dependency updates:")
+            for update in git_updates:
+                print(f"  {update['package']:<30} {update.get('old_tag', 'no tag'):<20} → {update['new_tag']}")
+            print()
+        
+        return False
+    else:
+        # Write updated content
+        with open(pyproject_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return True
 
 
 def update_pyproject_toml(
@@ -800,13 +909,15 @@ def main():
             print(f"  ❓ No tags found: {no_tags_git}")
         
         # List outdated git dependencies
-        if outdated_git > 0:
-            print("\n  ⚠️  Outdated git dependencies:")
+        if outdated_git > 0 or has_tags_git > 0:
+            print("\n  ⚠️  Git dependencies with updates available:")
             for git_result in git_results:
                 if git_result["status"] == "outdated":
                     print(f"    - {git_result['package']}: {git_result['current_ref']} → {git_result['latest_tag']}")
+                elif git_result["status"] == "has-tags":
+                    print(f"    - {git_result['package']}: (no tag) → {git_result['latest_tag']} (tag available)")
     
-    # Prepare updates
+    # Prepare updates for PyPI dependencies
     updates = []
     for result in results:
         # Only update outdated packages (or all if --only-outdated is not set and status is not unknown)
@@ -833,6 +944,35 @@ def main():
                     "new_spec": new_spec,
                 })
     
+    # Prepare updates for git dependencies
+    git_updates = []
+    for git_result in git_results:
+        # Update if: outdated, or has tags but no tag specified
+        should_update_git = False
+        if git_result["status"] == "outdated":
+            should_update_git = True
+        elif git_result["status"] == "has-tags" and git_result["ref_type"] != "tag":
+            # Has tags available but using branch/default - offer to update
+            should_update_git = True
+        
+        if should_update_git and git_result["latest_tag"]:
+            # Extract git URL from source
+            git_info = extract_git_info(git_result["source"])
+            git_url = git_info["url"]
+            
+            # Get current ref, handling None and "default" values
+            current_ref = git_result.get("current_ref")
+            if current_ref == "default" or not current_ref:
+                current_ref = None
+            
+            git_updates.append({
+                "package": git_result["package"],
+                "group": git_result["group"],
+                "git_url": git_url,
+                "old_tag": current_ref,
+                "new_tag": git_result["latest_tag"],
+            })
+    
     if outdated > 0:
         print()
         print("⚠️  Outdated packages:")
@@ -840,7 +980,10 @@ def main():
             if result["status"] == "outdated":
                 print(f"  - {result['package']}: {result['current']} → {result['latest']}")
     
-    if updates:
+    # Combine PyPI and git updates for display
+    all_updates = updates or git_updates
+    
+    if all_updates:
         if args.update:
             # Show what will be updated
             print()
@@ -848,9 +991,20 @@ def main():
             print("UPDATES TO APPLY")
             print("=" * 80)
             print()
-            for update in updates:
-                print(f"  {update['package']:<30} {update['old_spec']:<30} → {update['new_spec']}")
-            print()
+            
+            if updates:
+                print("PyPI Dependencies:")
+                for update in updates:
+                    print(f"  {update['package']:<30} {update['old_spec']:<30} → {update['new_spec']}")
+                print()
+            
+            if git_updates:
+                print("Git Dependencies:")
+                for git_update in git_updates:
+                    old_tag = git_update.get('old_tag', 'none') or 'none'
+                    new_tag = git_update.get('new_tag', 'unknown') or 'unknown'
+                    print(f"  {git_update['package']:<30} {old_tag:<30} → {new_tag}")
+                print()
             
             if not args.yes:
                 response = input("Apply these updates? (yes/no): ").strip().lower()
@@ -858,20 +1012,39 @@ def main():
                     print("Update cancelled.")
                     return
             
-            # Apply updates
-            if update_pyproject_toml(pyproject_path, updates, dry_run=False, is_poetry=is_poetry):
+            # Apply PyPI updates
+            updated_pypi = False
+            if updates:
+                updated_pypi = update_pyproject_toml(pyproject_path, updates, dry_run=False, is_poetry=is_poetry)
+            
+            # Apply git updates
+            updated_git = False
+            if git_updates:
+                updated_git = update_git_dependencies_in_pyproject(
+                    pyproject_path, git_updates, dry_run=False, is_poetry=is_poetry
+                )
+            
+            if updated_pypi or updated_git:
                 print()
                 print("✅ pyproject.toml updated successfully!")
                 print()
                 print("Next steps:")
                 print("  1. Review the changes: git diff pyproject.toml")
-                print("  2. Test your project: python scripts/test_compatibility.py")
-                print("  3. Commit the changes: git add pyproject.toml && git commit -m 'chore: update dependencies'")
+                print("  2. Update lock file: poetry lock --no-update")
+                print("  3. Test your project")
+                print("  4. Commit the changes: git add pyproject.toml poetry.lock && git commit -m 'chore: update dependencies'")
         else:
             # Dry run mode - show proposed changes
-            print()
-            update_pyproject_toml(pyproject_path, updates, dry_run=True, is_poetry=is_poetry)
-    elif outdated == 0:
+            if updates:
+                print()
+                update_pyproject_toml(pyproject_path, updates, dry_run=True, is_poetry=is_poetry)
+            
+            if git_updates:
+                print()
+                update_git_dependencies_in_pyproject(
+                    pyproject_path, git_updates, dry_run=True, is_poetry=is_poetry
+                )
+    elif outdated == 0 and not git_updates:
         print()
         print("✅ All dependencies are up-to-date!")
 
