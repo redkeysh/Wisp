@@ -3,7 +3,6 @@
 from typing import Any
 
 import discord
-from discord import app_commands
 
 from wisp_framework.module import Module
 from wisp_framework.utils.decorators import handle_errors
@@ -28,29 +27,29 @@ class HealthModule(Module):
         async def health_command(interaction: discord.Interaction) -> None:
             """Health check command."""
             health_service = ctx.services.get("health")
-            
+
             if not health_service:
                 await respond_error(interaction, "Health service not available.")
                 return
 
             # Get health status
             health_status = health_service.get_health()
-            
+
             # Check database health dynamically
             db_service = ctx.services.get("db")
             if db_service:
                 db_healthy = db_service.engine is not None and db_service.initialized
                 health_status["services"]["db"] = {"healthy": db_healthy}
-            
+
             # Recalculate overall health
             all_healthy = all(
                 status.get("healthy", False) for status in health_status["services"].values()
             )
             health_status["healthy"] = all_healthy
-            
+
             # Build fields for embed
             fields = []
-            
+
             # Add service statuses
             if health_status["services"]:
                 service_text = []
@@ -62,7 +61,7 @@ class HealthModule(Module):
                     "value": "\n".join(service_text) or "No services registered",
                     "inline": False
                 })
-            
+
             # Add bot metrics if available
             metrics_service = ctx.services.get("metrics")
             if metrics_service:
@@ -74,7 +73,7 @@ class HealthModule(Module):
                         "value": str(total_commands),
                         "inline": True
                     })
-            
+
             # Create appropriate embed based on health
             if health_status["healthy"]:
                 embed = EmbedBuilder.success(
@@ -88,5 +87,5 @@ class HealthModule(Module):
                     description="Some services are unhealthy",
                     fields=fields
                 )
-            
+
             await respond_success(interaction, "Health check complete", embed=embed)

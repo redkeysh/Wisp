@@ -1,6 +1,6 @@
 """Embed builders and helpers for common Discord message patterns."""
 
-from typing import Any, Optional
+from typing import Any
 
 import discord
 
@@ -11,9 +11,9 @@ class EmbedBuilder:
     @staticmethod
     def success(
         title: str,
-        description: Optional[str] = None,
-        fields: Optional[list[dict[str, Any]]] = None,
-        footer: Optional[str] = None,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+        footer: str | None = None,
     ) -> discord.Embed:
         """Create a success embed (green).
 
@@ -45,9 +45,9 @@ class EmbedBuilder:
     @staticmethod
     def error(
         title: str,
-        description: Optional[str] = None,
-        fields: Optional[list[dict[str, Any]]] = None,
-        footer: Optional[str] = None,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+        footer: str | None = None,
     ) -> discord.Embed:
         """Create an error embed (red).
 
@@ -79,9 +79,9 @@ class EmbedBuilder:
     @staticmethod
     def info(
         title: str,
-        description: Optional[str] = None,
-        fields: Optional[list[dict[str, Any]]] = None,
-        footer: Optional[str] = None,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+        footer: str | None = None,
     ) -> discord.Embed:
         """Create an info embed (blue).
 
@@ -113,9 +113,9 @@ class EmbedBuilder:
     @staticmethod
     def warning(
         title: str,
-        description: Optional[str] = None,
-        fields: Optional[list[dict[str, Any]]] = None,
-        footer: Optional[str] = None,
+        description: str | None = None,
+        fields: list[dict[str, Any]] | None = None,
+        footer: str | None = None,
     ) -> discord.Embed:
         """Create a warning embed (orange).
 
@@ -148,10 +148,10 @@ class EmbedBuilder:
     def list_embed(
         title: str,
         items: list[str],
-        description: Optional[str] = None,
+        description: str | None = None,
         items_per_page: int = 10,
         page: int = 1,
-        footer: Optional[str] = None,
+        footer: str | None = None,
     ) -> discord.Embed:
         """Create a paginated list embed.
 
@@ -198,7 +198,7 @@ class EmbedBuilder:
         title: str,
         headers: list[str],
         rows: list[list[str]],
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> discord.Embed:
         """Create a table-style embed.
 
@@ -247,28 +247,28 @@ class EmbedBuilder:
 
 
 def create_success_embed(
-    title: str, description: Optional[str] = None, **kwargs: Any
+    title: str, description: str | None = None, **kwargs: Any
 ) -> discord.Embed:
     """Convenience function for success embeds."""
     return EmbedBuilder.success(title, description, **kwargs)
 
 
 def create_error_embed(
-    title: str, description: Optional[str] = None, **kwargs: Any
+    title: str, description: str | None = None, **kwargs: Any
 ) -> discord.Embed:
     """Convenience function for error embeds."""
     return EmbedBuilder.error(title, description, **kwargs)
 
 
 def create_info_embed(
-    title: str, description: Optional[str] = None, **kwargs: Any
+    title: str, description: str | None = None, **kwargs: Any
 ) -> discord.Embed:
     """Convenience function for info embeds."""
     return EmbedBuilder.info(title, description, **kwargs)
 
 
 def create_warning_embed(
-    title: str, description: Optional[str] = None, **kwargs: Any
+    title: str, description: str | None = None, **kwargs: Any
 ) -> discord.Embed:
     """Convenience function for warning embeds."""
     return EmbedBuilder.warning(title, description, **kwargs)

@@ -2,9 +2,9 @@
 
 import time
 from collections import defaultdict
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
-import discord
 from discord import Interaction
 
 
@@ -47,7 +47,7 @@ class CooldownManager:
         """
         self._cooldowns[key][user_id] = time.time()
 
-    def reset_cooldown(self, key: str, user_id: Optional[int] = None) -> None:
+    def reset_cooldown(self, key: str, user_id: int | None = None) -> None:
         """Reset cooldown for a key and optionally a user.
 
         Args:

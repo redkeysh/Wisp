@@ -3,7 +3,6 @@
 from typing import Any
 
 import discord
-from discord import app_commands
 
 from wisp_framework.module import Module
 from wisp_framework.utils.decorators import handle_errors
@@ -28,7 +27,7 @@ class PingModule(Module):
         async def ping_command(interaction: discord.Interaction) -> None:
             """Ping command handler."""
             latency = round(bot.latency * 1000)
-            
+
             # Determine status color based on latency
             if latency < 100:
                 status = "Excellent"
@@ -42,7 +41,7 @@ class PingModule(Module):
             else:
                 status = "Poor"
                 color_type = "error"
-            
+
             # Create appropriate embed
             if color_type == "success":
                 embed = EmbedBuilder.success(
@@ -68,5 +67,5 @@ class PingModule(Module):
                     description=f"Latency: **{latency}ms**\nStatus: {status}",
                     fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
                 )
-            
+
             await respond_success(interaction, f"Pong! Latency: {latency}ms", embed=embed)

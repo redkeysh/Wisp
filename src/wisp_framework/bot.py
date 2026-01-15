@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import discord
 from discord import app_commands
@@ -10,10 +10,7 @@ from discord.ext import commands
 
 from wisp_framework.config import AppConfig
 from wisp_framework.context import BotContext
-from wisp_framework.exceptions import FrameworkError
-from wisp_framework.logging import CorrelationContext
 from wisp_framework.registry import ModuleRegistry
-from wisp_framework.services.audit import AuditService
 from wisp_framework.services.base import ServiceContainer
 
 logger = logging.getLogger(__name__)
@@ -37,7 +34,7 @@ class WispBot(commands.Bot):
         self.services = services
         self.module_registry = module_registry
         self.ctx = ctx
-        self.started_at: Optional[datetime] = None
+        self.started_at: datetime | None = None
 
         # Set up error handlers
         self.tree.on_error = self._on_app_command_error
@@ -59,7 +56,7 @@ class WispBot(commands.Bot):
         """Called when the bot is ready."""
         logger.info(f"Bot ready: {self.user} (ID: {self.user.id if self.user else None})")
         logger.info(f"Connected to {len(self.guilds)} guild(s)")
-        
+
         # Load modules for each guild
         for guild in self.guilds:
             await self.module_registry.load_enabled_modules(self, self.ctx, guild.id)

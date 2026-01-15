@@ -32,6 +32,7 @@ class OnboardingModule(Module):
             if db_service and db_service.session_factory:
                 try:
                     from sqlalchemy import select
+
                     from wisp_framework.db.models import GuildConfig
 
                     async with db_service.session_factory() as session:
@@ -52,7 +53,7 @@ class OnboardingModule(Module):
                 if channel and isinstance(channel, discord.TextChannel):
                     # Use embed builder for nicer welcome message
                     from wisp_framework.utils.embeds import EmbedBuilder
-                    
+
                     embed = EmbedBuilder.success(
                         title=f"Welcome to {member.guild.name}! 🎉",
                         description=f"{member.mention} has joined the server.",
@@ -62,5 +63,5 @@ class OnboardingModule(Module):
                         ]
                     )
                     embed.set_thumbnail(url=member.display_avatar.url)
-                    
+
                     await channel.send(embed=embed)

@@ -3,7 +3,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -30,10 +30,10 @@ class AuditService(BaseService):
     def log_action(
         self,
         action: str,
-        user_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
-        channel_id: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        user_id: int | None = None,
+        guild_id: int | None = None,
+        channel_id: int | None = None,
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Log an audit action.

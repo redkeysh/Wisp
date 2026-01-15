@@ -2,7 +2,8 @@
 
 import asyncio
 import logging
-from typing import Any, Awaitable, Callable, Optional
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -41,7 +42,7 @@ class SchedulerService(BaseService):
         self,
         coro: Callable[[], Awaitable[None]],
         interval: float,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> None:
         """Register a periodic task.
 

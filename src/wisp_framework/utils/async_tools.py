@@ -3,14 +3,15 @@
 import asyncio
 import functools
 import logging
-from typing import Any, Awaitable, Callable, TypeVar
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
 
-async def retry(
+async def retry[T](
     func: Callable[[], Awaitable[T]],
     max_attempts: int = 3,
     delay: float = 1.0,
@@ -67,7 +68,7 @@ def timeout(seconds: float):
         async def wrapper(*args: Any, **kwargs: Any) -> T:
             try:
                 return await asyncio.wait_for(func(*args, **kwargs), timeout=seconds)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.error(f"Function {func.__name__} timed out after {seconds}s")
                 raise
 

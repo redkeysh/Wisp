@@ -1,6 +1,5 @@
 """Permission check utilities for owner/admin checks."""
 
-from typing import Optional
 
 import discord
 from discord import Interaction

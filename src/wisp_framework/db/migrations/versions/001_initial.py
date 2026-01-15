@@ -1,21 +1,20 @@
 """Initial migration
 
 Revision ID: 001
-Revises: 
+Revises:
 Create Date: 2024-01-01 00:00:00.000000
-
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '001'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -70,10 +69,10 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_guild_data_key'), table_name='guild_data')
     op.drop_index(op.f('ix_guild_data_guild_id'), table_name='guild_data')
     op.drop_table('guild_data')
-    
+
     op.drop_index(op.f('ix_module_states_module_name'), table_name='module_states')
     op.drop_index(op.f('ix_module_states_guild_id'), table_name='module_states')
     op.drop_table('module_states')
-    
+
     op.drop_index(op.f('ix_guild_configs_guild_id'), table_name='guild_configs')
     op.drop_table('guild_configs')

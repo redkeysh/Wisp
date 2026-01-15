@@ -1,7 +1,6 @@
 """Time utilities including uptime formatting."""
 
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
 
 
 def format_uptime(start_time: datetime) -> str:

@@ -1,7 +1,7 @@
 """Database service with async SQLAlchemy and connection pooling."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -14,8 +14,8 @@ class DatabaseService(BaseService):
     def __init__(self, config: Any) -> None:
         """Initialize the database service."""
         super().__init__(config)
-        self._engine: Optional[Any] = None
-        self._session_factory: Optional[Any] = None
+        self._engine: Any | None = None
+        self._session_factory: Any | None = None
 
     async def startup(self) -> None:
         """Start up the database service."""
@@ -28,7 +28,6 @@ class DatabaseService(BaseService):
         try:
             import sqlalchemy as sa
             from sqlalchemy.ext.asyncio import (
-                AsyncEngine,
                 AsyncSession,
                 async_sessionmaker,
                 create_async_engine,
@@ -56,7 +55,7 @@ class DatabaseService(BaseService):
 
             logger.info("Database service started successfully")
             self._mark_initialized()
-            
+
             # Update health service if available
             # Note: This requires accessing the service container, which we don't have here
             # Health status will be checked dynamically
@@ -78,22 +77,22 @@ class DatabaseService(BaseService):
             logger.info("Database service shut down")
 
     @property
-    def engine(self) -> Optional[Any]:
+    def engine(self) -> Any | None:
         """Get the database engine."""
         return self._engine
 
     @property
-    def session_factory(self) -> Optional[Any]:
+    def session_factory(self) -> Any | None:
         """Get the session factory."""
         return self._session_factory
 
-    def get_session(self) -> Optional[Any]:
+    def get_session(self) -> Any | None:
         """Get a new database session."""
         if not self._session_factory:
             return None
         return self._session_factory()
-    
-    def get_async_db(self) -> Optional[Any]:
+
+    def get_async_db(self) -> Any | None:
         """Get AsyncDatabase helper for raw SQL."""
         if not self._engine:
             return None

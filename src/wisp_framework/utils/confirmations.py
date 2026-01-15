@@ -1,6 +1,6 @@
 """Confirmation dialogs for destructive actions."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import discord
 from discord import Interaction
@@ -12,7 +12,7 @@ class ConfirmationView(discord.ui.View):
     def __init__(
         self,
         on_confirm: Callable[[Interaction], None],
-        on_cancel: Optional[Callable[[Interaction], None]] = None,
+        on_cancel: Callable[[Interaction], None] | None = None,
         timeout: float = 60.0,
     ) -> None:
         """Initialize confirmation view.
@@ -55,9 +55,9 @@ class ConfirmationView(discord.ui.View):
 async def confirm_action(
     interaction: Interaction,
     message: str,
-    embed: Optional[discord.Embed] = None,
     on_confirm: Callable[[Interaction], None],
-    on_cancel: Optional[Callable[[Interaction], None]] = None,
+    embed: discord.Embed | None = None,
+    on_cancel: Callable[[Interaction], None] | None = None,
     timeout: float = 60.0,
 ) -> None:
     """Show a confirmation dialog.

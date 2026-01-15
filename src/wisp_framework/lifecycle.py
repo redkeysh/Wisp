@@ -3,7 +3,6 @@
 import asyncio
 import logging
 import signal
-from typing import Any, Optional
 
 from wisp_framework.bot import WispBot
 from wisp_framework.config import AppConfig
@@ -27,7 +26,7 @@ class LifecycleManager:
 
     def __init__(self) -> None:
         """Initialize lifecycle manager."""
-        self.bot: Optional[WispBot] = None
+        self.bot: WispBot | None = None
         self._shutdown_event = asyncio.Event()
 
     async def startup(
@@ -103,7 +102,7 @@ def create_services(config: AppConfig) -> ServiceContainer:
     services.register("scheduler", SchedulerService(config))
     services.register("audit", AuditService(config))
     services.register("webhook_logger", WebhookLoggerService(config))
-    
+
     # Register service health statuses
     health_service.register_service("cache", {"healthy": True})
     health_service.register_service("metrics", {"healthy": True})
@@ -113,7 +112,7 @@ def create_services(config: AppConfig) -> ServiceContainer:
     # Optional database service
     db_service = DatabaseService(config)
     services.register("db", db_service)
-    
+
     # Register database health (will be updated when DB starts)
     health_service.register_service("db", {"healthy": False})
 

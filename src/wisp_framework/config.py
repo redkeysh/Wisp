@@ -1,9 +1,6 @@
 """Configuration management with environment variable loading and validation."""
 
 import os
-import re
-from pathlib import Path
-from typing import Any, Optional
 
 import discord
 
@@ -29,7 +26,7 @@ class AppConfig:
         env_file = f".env.{env}"
 
         if os.path.exists(env_file):
-            with open(env_file, "r") as f:
+            with open(env_file) as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
@@ -75,7 +72,7 @@ class AppConfig:
             return False
         return default
 
-    def _get_int(self, key: str, default: Optional[int] = None) -> Optional[int]:
+    def _get_int(self, key: str, default: int | None = None) -> int | None:
         """Get integer value from environment variable."""
         value = os.getenv(key)
         if value is None:
@@ -101,12 +98,12 @@ class AppConfig:
         os.environ["DISCORD_TOKEN"] = value
 
     @property
-    def database_url(self) -> Optional[str]:
+    def database_url(self) -> str | None:
         """Database connection URL (optional)."""
         return os.getenv("DATABASE_URL")
 
     @property
-    def redis_url(self) -> Optional[str]:
+    def redis_url(self) -> str | None:
         """Redis connection URL (optional)."""
         return os.getenv("REDIS_URL")
 
@@ -121,22 +118,22 @@ class AppConfig:
         return self._get_bool("SYNC_ON_STARTUP", True)
 
     @property
-    def owner_id(self) -> Optional[int]:
+    def owner_id(self) -> int | None:
         """Bot owner Discord user ID (optional)."""
         return self._get_int("OWNER_ID")
 
     @property
-    def welcome_channel_id(self) -> Optional[int]:
+    def welcome_channel_id(self) -> int | None:
         """Default welcome channel ID (optional)."""
         return self._get_int("WELCOME_CHANNEL_ID")
 
     @property
-    def sentry_dsn(self) -> Optional[str]:
+    def sentry_dsn(self) -> str | None:
         """Sentry DSN for error tracking (optional)."""
         return os.getenv("SENTRY_DSN")
 
     @property
-    def webhook_logger_url(self) -> Optional[str]:
+    def webhook_logger_url(self) -> str | None:
         """Webhook URL for logging (optional)."""
         return os.getenv("WEBHOOK_LOGGER_URL")
 

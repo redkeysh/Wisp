@@ -1,11 +1,9 @@
 """GuildDataService for easy per-guild data storage."""
 
-import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from wisp_framework.db.models import GuildData
 from wisp_framework.services.db import DatabaseService
@@ -16,17 +14,17 @@ logger = logging.getLogger(__name__)
 class GuildDataService:
     """Service for storing and retrieving per-guild data."""
 
-    def __init__(self, db_service: Optional[DatabaseService]) -> None:
+    def __init__(self, db_service: DatabaseService | None) -> None:
         """Initialize the guild data service."""
         self._db_service = db_service
-        self._memory_cache: Dict[tuple[int, str, Optional[str]], Any] = {}
+        self._memory_cache: dict[tuple[int, str, str | None], Any] = {}
 
     async def get(
         self,
         guild_id: int,
         key: str,
-        module_name: Optional[str] = None,
-    ) -> Optional[Any]:
+        module_name: str | None = None,
+    ) -> Any | None:
         """Get a value for a guild."""
         cache_key = (guild_id, key, module_name)
 
@@ -57,7 +55,7 @@ class GuildDataService:
         guild_id: int,
         key: str,
         value: Any,
-        module_name: Optional[str] = None,
+        module_name: str | None = None,
     ) -> None:
         """Set a value for a guild."""
         cache_key = (guild_id, key, module_name)
@@ -96,7 +94,7 @@ class GuildDataService:
         self,
         guild_id: int,
         key: str,
-        module_name: Optional[str] = None,
+        module_name: str | None = None,
     ) -> None:
         """Delete a value for a guild."""
         cache_key = (guild_id, key, module_name)
@@ -124,10 +122,10 @@ class GuildDataService:
     async def get_all(
         self,
         guild_id: int,
-        module_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        module_name: str | None = None,
+    ) -> dict[str, Any]:
         """Get all data for a guild, optionally filtered by module."""
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
 
         # Try database first
         if self._db_service and self._db_service.session_factory:

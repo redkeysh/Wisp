@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import time
-from typing import Any, List, Optional
+from typing import Any
 
 import aiohttp
 
@@ -18,11 +18,11 @@ class WebhookLoggerService(BaseService):
     def __init__(self, config: Any) -> None:
         """Initialize the webhook logger service."""
         super().__init__(config)
-        self._webhook_url: Optional[str] = config.webhook_logger_url
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._webhook_url: str | None = config.webhook_logger_url
+        self._session: aiohttp.ClientSession | None = None
         self._rate_limit_delay = 1.0  # Minimum delay between requests
         self._last_request_time = 0.0
-        self._queue: List[dict[str, Any]] = []
+        self._queue: list[dict[str, Any]] = []
         self._max_retries = 3
         self._retry_delay = 1.0
 
@@ -57,7 +57,7 @@ class WebhookLoggerService(BaseService):
         message = {"embeds": [embed]}
         await self._send_message(message)
 
-    async def send_embeds(self, embeds: List[dict[str, Any]]) -> None:
+    async def send_embeds(self, embeds: list[dict[str, Any]]) -> None:
         """Send multiple embeds to the webhook (max 10 per message)."""
         if not self._webhook_url or not self._session:
             return

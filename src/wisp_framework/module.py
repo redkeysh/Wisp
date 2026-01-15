@@ -1,9 +1,7 @@
 """Module base class for framework modules."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Set
-
-import discord
+from typing import Any
 
 
 class Module(ABC):
@@ -21,7 +19,7 @@ class Module(ABC):
         return True
 
     @property
-    def required_services(self) -> Set[str]:
+    def required_services(self) -> set[str]:
         """Set of required service names."""
         return set()
 
@@ -40,8 +38,10 @@ class Module(ABC):
         """
         pass
 
-    async def teardown(self, bot: Any, ctx: Any) -> None:
+    async def teardown(self, bot: Any, ctx: Any) -> None:  # noqa: B027
         """Tear down the module.
+
+        Optional method - subclasses can override if cleanup is needed.
 
         Args:
             bot: The Discord bot instance

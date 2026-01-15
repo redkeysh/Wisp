@@ -1,7 +1,7 @@
 """Database stub for graceful degradation when DB is unavailable."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class DatabaseStub:
         """Stub execute method."""
         self._warn_once("execute")
 
-    async def fetchone(self, query: str, *args: Any, **kwargs: Any) -> Optional[Any]:
+    async def fetchone(self, query: str, *args: Any, **kwargs: Any) -> Any | None:
         """Stub fetchone method."""
         self._warn_once("fetchone")
         return None

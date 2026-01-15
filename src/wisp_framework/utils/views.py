@@ -1,6 +1,7 @@
 """View helpers for Discord UI components."""
 
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 import discord
 from discord import Interaction
@@ -22,9 +23,9 @@ class ButtonView(discord.ui.View):
         self,
         label: str,
         style: discord.ButtonStyle = discord.ButtonStyle.primary,
-        emoji: Optional[str] = None,
-        callback: Optional[Callable[[Interaction], Any]] = None,
-        row: Optional[int] = None,
+        emoji: str | None = None,
+        callback: Callable[[Interaction], Any] | None = None,
+        row: int | None = None,
     ) -> discord.ui.Button:
         """Add a button to the view.
 
@@ -73,7 +74,7 @@ class SelectMenuView(discord.ui.View):
         callback: Callable[[Interaction, discord.ui.Select], Any],
         min_values: int = 1,
         max_values: int = 1,
-        row: Optional[int] = None,
+        row: int | None = None,
     ) -> discord.ui.Select:
         """Add a select menu to the view.
 

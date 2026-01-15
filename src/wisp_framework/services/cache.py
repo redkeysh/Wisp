@@ -1,7 +1,7 @@
 """Cache service with in-memory and optional Redis support."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -14,8 +14,8 @@ class CacheService(BaseService):
     def __init__(self, config: Any) -> None:
         """Initialize the cache service."""
         super().__init__(config)
-        self._memory_cache: dict[str, tuple[Any, Optional[float]]] = {}
-        self._redis_client: Optional[Any] = None
+        self._memory_cache: dict[str, tuple[Any, float | None]] = {}
+        self._redis_client: Any | None = None
         self._use_redis = False
 
     async def startup(self) -> None:
@@ -52,7 +52,7 @@ class CacheService(BaseService):
         self._memory_cache.clear()
         logger.info("Cache service shut down")
 
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         """Get a value from cache."""
         if self._use_redis and self._redis_client:
             try:
@@ -64,7 +64,7 @@ class CacheService(BaseService):
 
         return self._memory_get(key)
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    async def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set a value in cache with optional TTL."""
         if self._use_redis and self._redis_client:
             try:
@@ -98,7 +98,7 @@ class CacheService(BaseService):
 
         self._memory_cache.clear()
 
-    def _memory_get(self, key: str) -> Optional[Any]:
+    def _memory_get(self, key: str) -> Any | None:
         """Get from memory cache."""
         if key not in self._memory_cache:
             return None
@@ -113,7 +113,7 @@ class CacheService(BaseService):
 
         return value
 
-    def _memory_set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def _memory_set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """Set in memory cache."""
         import time
 

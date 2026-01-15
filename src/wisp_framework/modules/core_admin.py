@@ -6,7 +6,12 @@ import discord
 from discord import app_commands
 
 from wisp_framework.module import Module
-from wisp_framework.utils.decorators import handle_errors, require_admin, require_guild, require_owner
+from wisp_framework.utils.decorators import (
+    handle_errors,
+    require_admin,
+    require_guild,
+    require_owner,
+)
 from wisp_framework.utils.embeds import EmbedBuilder
 from wisp_framework.utils.pagination import paginate_embeds
 from wisp_framework.utils.responses import respond_error, respond_success
@@ -138,10 +143,10 @@ class CoreAdminModule(Module):
         async def sync_command(interaction: discord.Interaction) -> None:
             """Sync commands manually."""
             from wisp_framework.utils.responses import ResponseHelper
-            
+
             await ResponseHelper.defer(interaction, ephemeral=True)
             synced = await bot.sync_commands()
-            
+
             embed = EmbedBuilder.success(
                 title="Commands Synced",
                 description=f"Successfully synced {len(synced)} command(s).",

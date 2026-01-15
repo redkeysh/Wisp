@@ -3,7 +3,6 @@
 import logging
 import sys
 import uuid
-from typing import Optional
 
 from wisp_framework.config import AppConfig
 
@@ -54,10 +53,10 @@ def get_logger(name: str) -> logging.Logger:
 class CorrelationContext:
     """Context manager for correlation IDs."""
 
-    def __init__(self, correlation_id: Optional[str] = None) -> None:
+    def __init__(self, correlation_id: str | None = None) -> None:
         """Initialize with optional correlation ID."""
         self.correlation_id = correlation_id or str(uuid.uuid4())
-        self.old_id: Optional[str] = None
+        self.old_id: str | None = None
 
     def __enter__(self) -> "CorrelationContext":
         """Enter context and set correlation ID."""

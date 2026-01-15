@@ -3,7 +3,7 @@
 import logging
 import time
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -16,9 +16,9 @@ class MetricsService(BaseService):
     def __init__(self, config: Any) -> None:
         """Initialize the metrics service."""
         super().__init__(config)
-        self._counters: Dict[str, int] = defaultdict(int)
-        self._timings: Dict[str, list[float]] = defaultdict(list)
-        self._gauges: Dict[str, float] = {}
+        self._counters: dict[str, int] = defaultdict(int)
+        self._timings: dict[str, list[float]] = defaultdict(list)
+        self._gauges: dict[str, float] = {}
 
     async def startup(self) -> None:
         """Start up the metrics service."""
@@ -51,7 +51,7 @@ class MetricsService(BaseService):
         """Set a gauge value."""
         self._gauges[name] = value
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get all metrics."""
         timing_stats = {}
         for name, timings in self._timings.items():
@@ -78,7 +78,7 @@ class MetricsService(BaseService):
             def __init__(self, service: MetricsService, metric_name: str) -> None:
                 self.service = service
                 self.metric_name = metric_name
-                self.start_time: Optional[float] = None
+                self.start_time: float | None = None
 
             def __enter__(self) -> "TimingContext":
                 self.start_time = time.time()

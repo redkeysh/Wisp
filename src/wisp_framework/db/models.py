@@ -1,8 +1,8 @@
 """Database models for the Wisp Framework."""
 
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import BigInteger, Boolean, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,7 +16,7 @@ class GuildConfig(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     guild_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
-    welcome_channel_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    welcome_channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
 
 class ModuleState(Base, TimestampMixin):
@@ -43,7 +43,7 @@ class GuildData(Base, TimestampMixin):
     guild_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
     key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     value: Mapped[Any] = mapped_column(JSONB, nullable=False)
-    module_name: Mapped[Optional[str]] = mapped_column(
+    module_name: Mapped[str | None] = mapped_column(
         String(100), nullable=True, index=True
     )
 

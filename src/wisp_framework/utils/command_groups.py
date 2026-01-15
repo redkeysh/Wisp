@@ -1,6 +1,6 @@
 """Command group utilities for organizing commands."""
 
-from typing import Any, Optional
+from typing import Any
 
 import discord
 from discord import app_commands
@@ -14,7 +14,7 @@ class CommandGroup:
         name: str,
         description: str,
         guild_only: bool = False,
-        default_permissions: Optional[discord.Permissions] = None,
+        default_permissions: discord.Permissions | None = None,
     ) -> None:
         """Initialize command group.
 
@@ -28,7 +28,7 @@ class CommandGroup:
         self.description = description
         self.guild_only = guild_only
         self.default_permissions = default_permissions
-        self.group: Optional[app_commands.Group] = None
+        self.group: app_commands.Group | None = None
 
     def create_group(self, tree: app_commands.CommandTree) -> app_commands.Group:
         """Create the command group on a tree.
@@ -50,8 +50,8 @@ class CommandGroup:
 
     def command(
         self,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
+        name: str | None = None,
+        description: str | None = None,
         **kwargs: Any,
     ):
         """Decorator to add a command to this group.

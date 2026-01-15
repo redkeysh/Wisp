@@ -1,9 +1,9 @@
 """Discord-specific utilities including object serialization."""
 
-from typing import Any, Dict
+from typing import Any
 
 
-def serialize_discord_object(obj: Any) -> Dict[str, Any]:
+def serialize_discord_object(obj: Any) -> dict[str, Any]:
     """Serialize a Discord object to a dictionary.
 
     Args:
@@ -16,7 +16,7 @@ def serialize_discord_object(obj: Any) -> Dict[str, Any]:
         return {}
 
     if hasattr(obj, "__dict__"):
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         for key, value in obj.__dict__.items():
             if not key.startswith("_"):
                 if hasattr(value, "__dict__"):

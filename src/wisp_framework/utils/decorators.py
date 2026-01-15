@@ -1,9 +1,9 @@
 """Decorators for commands and modules."""
 
 import functools
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
-import discord
 from discord import Interaction
 
 from wisp_framework.utils.permissions import is_admin, is_owner

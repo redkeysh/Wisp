@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, TypeVar
 
 from wisp_framework.exceptions import ServiceError
 
@@ -45,7 +45,7 @@ class ServiceContainer:
     def __init__(self, config: Any) -> None:
         """Initialize the service container."""
         self.config = config
-        self._services: Dict[str, BaseService] = {}
+        self._services: dict[str, BaseService] = {}
         self._logger = logging.getLogger(__name__)
 
     def register(self, name: str, service: BaseService) -> None:
@@ -55,11 +55,11 @@ class ServiceContainer:
         self._services[name] = service
         self._logger.debug(f"Registered service: {name}")
 
-    def get(self, name: str) -> Optional[BaseService]:
+    def get(self, name: str) -> BaseService | None:
         """Get a service by name."""
         return self._services.get(name)
 
-    def get_typed(self, name: str, service_type: Type[T]) -> Optional[T]:
+    def get_typed(self, name: str, service_type: type[T]) -> T | None:
         """Get a service by name with type checking."""
         service = self.get(name)
         if service is None:

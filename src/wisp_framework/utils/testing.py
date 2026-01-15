@@ -1,10 +1,7 @@
 """Testing utilities for Discord bots."""
 
-from typing import Any, Optional
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
-
-import discord
-from discord import Interaction
 
 
 class MockInteraction:
@@ -13,8 +10,8 @@ class MockInteraction:
     def __init__(
         self,
         user_id: int = 123456789,
-        guild_id: Optional[int] = 123456789,
-        channel_id: Optional[int] = 123456789,
+        guild_id: int | None = 123456789,
+        channel_id: int | None = 123456789,
     ) -> None:
         """Initialize mock interaction.
 

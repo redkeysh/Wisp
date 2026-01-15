@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # Import your models
 from wisp_framework.db.base import Base
-from wisp_framework.db.models import GuildConfig, GuildData, ModuleState
 
 # this is the Alembic Config object
 config = context.config

@@ -1,6 +1,5 @@
 """Pagination utilities for Discord embeds and messages."""
 
-from typing import Any, Callable, Optional
 
 import discord
 from discord import Interaction
@@ -29,7 +28,7 @@ class Paginator:
         self.timeout = timeout
         self.ephemeral = ephemeral
         self.current_page = 0
-        self.view: Optional[PaginatorView] = None
+        self.view: PaginatorView | None = None
 
     async def start(self) -> None:
         """Start the paginator."""

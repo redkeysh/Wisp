@@ -1,6 +1,5 @@
 """Response helpers for Discord interactions."""
 
-from typing import Any, Optional
 
 import discord
 from discord import Interaction, Webhook
@@ -13,9 +12,9 @@ class ResponseHelper:
     async def success(
         interaction: Interaction,
         message: str,
-        embed: Optional[discord.Embed] = None,
+        embed: discord.Embed | None = None,
         ephemeral: bool = True,
-    ) -> Optional[Webhook]:
+    ) -> Webhook | None:
         """Send a success response.
 
         Args:
@@ -41,9 +40,9 @@ class ResponseHelper:
     async def error(
         interaction: Interaction,
         message: str,
-        embed: Optional[discord.Embed] = None,
+        embed: discord.Embed | None = None,
         ephemeral: bool = True,
-    ) -> Optional[Webhook]:
+    ) -> Webhook | None:
         """Send an error response.
 
         Args:
@@ -69,9 +68,9 @@ class ResponseHelper:
     async def info(
         interaction: Interaction,
         message: str,
-        embed: Optional[discord.Embed] = None,
+        embed: discord.Embed | None = None,
         ephemeral: bool = True,
-    ) -> Optional[Webhook]:
+    ) -> Webhook | None:
         """Send an info response.
 
         Args:
@@ -98,7 +97,7 @@ class ResponseHelper:
         interaction: Interaction,
         embed: discord.Embed,
         ephemeral: bool = True,
-    ) -> Optional[Webhook]:
+    ) -> Webhook | None:
         """Send an embed response.
 
         Args:
@@ -132,8 +131,8 @@ class ResponseHelper:
     @staticmethod
     async def edit_response(
         interaction: Interaction,
-        content: Optional[str] = None,
-        embed: Optional[discord.Embed] = None,
+        content: str | None = None,
+        embed: discord.Embed | None = None,
     ) -> discord.Message:
         """Edit the original interaction response.
 
@@ -152,9 +151,9 @@ class ResponseHelper:
 async def respond_success(
     interaction: Interaction,
     message: str,
-    embed: Optional[discord.Embed] = None,
+    embed: discord.Embed | None = None,
     ephemeral: bool = True,
-) -> Optional[Webhook]:
+) -> Webhook | None:
     """Send a success response."""
     return await ResponseHelper.success(interaction, message, embed, ephemeral)
 
@@ -162,9 +161,9 @@ async def respond_success(
 async def respond_error(
     interaction: Interaction,
     message: str,
-    embed: Optional[discord.Embed] = None,
+    embed: discord.Embed | None = None,
     ephemeral: bool = True,
-) -> Optional[Webhook]:
+) -> Webhook | None:
     """Send an error response."""
     return await ResponseHelper.error(interaction, message, embed, ephemeral)
 
@@ -172,9 +171,9 @@ async def respond_error(
 async def respond_info(
     interaction: Interaction,
     message: str,
-    embed: Optional[discord.Embed] = None,
+    embed: discord.Embed | None = None,
     ephemeral: bool = True,
-) -> Optional[Webhook]:
+) -> Webhook | None:
     """Send an info response."""
     return await ResponseHelper.info(interaction, message, embed, ephemeral)
 
@@ -183,6 +182,6 @@ async def respond_embed(
     interaction: Interaction,
     embed: discord.Embed,
     ephemeral: bool = True,
-) -> Optional[Webhook]:
+) -> Webhook | None:
     """Send an embed response."""
     return await ResponseHelper.send_embed(interaction, embed, ephemeral)

@@ -1,10 +1,10 @@
 """Async database helper for raw SQL execution."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 logger = logging.getLogger(__name__)
 
@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 class AsyncDatabase:
     """Helper class for raw SQL execution."""
 
-    def __init__(self, engine: Optional[AsyncEngine]) -> None:
+    def __init__(self, engine: AsyncEngine | None) -> None:
         """Initialize the async database helper."""
         self._engine = engine
 
     async def execute(
         self, query: str, *args: Any, **kwargs: Any
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Execute a raw SQL query."""
         if not self._engine:
             raise RuntimeError("Database engine is not available")
@@ -29,7 +29,7 @@ class AsyncDatabase:
 
     async def fetchone(
         self, query: str, *args: Any, **kwargs: Any
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Fetch one row from a query."""
         if not self._engine:
             raise RuntimeError("Database engine is not available")

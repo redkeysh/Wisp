@@ -1,8 +1,8 @@
 """Middleware system for commands."""
 
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
-import discord
 from discord import Interaction
 
 
@@ -61,7 +61,7 @@ class MiddlewareChain:
             middleware = self.middlewares.pop(0)
             return await middleware.process(i, next_handler)
 
-        middlewares_copy = self.middlewares.copy()
+        self.middlewares.copy()
         self.middlewares.clear()
         return await next_handler(interaction)
 

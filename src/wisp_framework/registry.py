@@ -3,7 +3,7 @@
 import importlib
 import logging
 import pkgutil
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from wisp_framework.feature_flags import FeatureFlags
 from wisp_framework.module import Module
@@ -16,7 +16,7 @@ class ModuleRegistry:
 
     def __init__(self, feature_flags: FeatureFlags) -> None:
         """Initialize the module registry."""
-        self._modules: Dict[str, Module] = {}
+        self._modules: dict[str, Module] = {}
         self._feature_flags = feature_flags
 
     def register(self, module: Module) -> None:
@@ -55,16 +55,16 @@ class ModuleRegistry:
         except Exception as e:
             logger.error(f"Failed to discover modules from {package_path}: {e}")
 
-    def list_modules(self) -> List[str]:
+    def list_modules(self) -> list[str]:
         """List all registered module names."""
         return list(self._modules.keys())
 
-    def get_module(self, name: str) -> Optional[Module]:
+    def get_module(self, name: str) -> Module | None:
         """Get a module by name."""
         return self._modules.get(name)
 
     async def load_enabled_modules(
-        self, bot: Any, ctx: Any, guild_id: Optional[int] = None
+        self, bot: Any, ctx: Any, guild_id: int | None = None
     ) -> None:
         """Load all enabled modules for a guild.
 
@@ -105,7 +105,7 @@ class ModuleRegistry:
             except Exception as e:
                 logger.error(f"Failed to load module '{module_name}': {e}", exc_info=True)
 
-    def _resolve_dependencies(self) -> List[str]:
+    def _resolve_dependencies(self) -> list[str]:
         """Resolve module dependencies and return load order."""
         # Simple topological sort
         visited = set()

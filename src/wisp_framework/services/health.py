@@ -1,7 +1,7 @@
 """Health check service."""
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from wisp_framework.services.base import BaseService
 
@@ -14,7 +14,7 @@ class HealthService(BaseService):
     def __init__(self, config: Any) -> None:
         """Initialize the health service."""
         super().__init__(config)
-        self._service_statuses: Dict[str, Dict[str, Any]] = {}
+        self._service_statuses: dict[str, dict[str, Any]] = {}
 
     async def startup(self) -> None:
         """Start up the health service."""
@@ -26,11 +26,11 @@ class HealthService(BaseService):
         self._service_statuses.clear()
         logger.info("Health service shut down")
 
-    def register_service(self, name: str, status: Dict[str, Any]) -> None:
+    def register_service(self, name: str, status: dict[str, Any]) -> None:
         """Register a service status."""
         self._service_statuses[name] = status
 
-    def get_health(self) -> Dict[str, Any]:
+    def get_health(self) -> dict[str, Any]:
         """Get overall health status."""
         all_healthy = all(
             status.get("healthy", False) for status in self._service_statuses.values()

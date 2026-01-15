@@ -1,10 +1,8 @@
 """Feature flags for per-guild module enable/disable."""
 
 import logging
-from typing import Dict, Optional
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from wisp_framework.db.models import ModuleState
 from wisp_framework.services.db import DatabaseService
@@ -15,10 +13,10 @@ logger = logging.getLogger(__name__)
 class FeatureFlags:
     """Manages feature flags (module enable/disable) per guild."""
 
-    def __init__(self, db_service: Optional[DatabaseService]) -> None:
+    def __init__(self, db_service: DatabaseService | None) -> None:
         """Initialize feature flags."""
         self._db_service = db_service
-        self._memory_cache: Dict[tuple[int, str], bool] = {}
+        self._memory_cache: dict[tuple[int, str], bool] = {}
 
     async def is_enabled(
         self, guild_id: int, module_name: str, default: bool = True
@@ -80,9 +78,9 @@ class FeatureFlags:
             except Exception as e:
                 logger.warning(f"Database set failed: {e}, using memory cache only")
 
-    async def get_all_enabled(self, guild_id: int) -> Dict[str, bool]:
+    async def get_all_enabled(self, guild_id: int) -> dict[str, bool]:
         """Get all module states for a guild."""
-        result: Dict[str, bool] = {}
+        result: dict[str, bool] = {}
 
         # Try database first
         if self._db_service and self._db_service.session_factory:
