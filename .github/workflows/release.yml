@@ -36,7 +36,14 @@ jobs:
       
       - name: Verify version matches pyproject.toml
         run: |
-          PYPROJECT_VERSION=$(python -c "import re; f=open('pyproject.toml'); content=f.read(); match=re.search(r'version\s*=\s*[\"']([^\"']+)[\"']', content); print(match.group(1) if match else '')")
+          PYPROJECT_VERSION=$(python << 'EOF'
+          import re
+          with open('pyproject.toml', 'r') as f:
+              content = f.read()
+          match = re.search(r'^version\s*=\s*"([^"]+)"', content, re.MULTILINE)
+          print(match.group(1) if match else '')
+          EOF
+          )
           TAG_VERSION="${{ steps.tag_version.outputs.version }}"
           if [ "$PYPROJECT_VERSION" != "$TAG_VERSION" ]; then
             echo "Error: Version mismatch!"
