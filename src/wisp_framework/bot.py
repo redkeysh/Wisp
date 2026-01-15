@@ -28,12 +28,12 @@ class WispBot(commands.Bot):
     ) -> None:
         """Initialize the framework bot."""
         intents = config.intents
-        
+
         # Set owner IDs for prefixed command owner checks
         owner_ids = None
         if config.owner_id:
             owner_ids = [config.owner_id]
-        
+
         super().__init__(command_prefix="!", intents=intents, owner_ids=owner_ids)
 
         self.config = config

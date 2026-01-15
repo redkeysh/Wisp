@@ -27,11 +27,11 @@ def setup_logging(config: AppConfig) -> None:
     - LOG_LEVEL_WISP_FRAMEWORK: Wisp Framework log level (default: same as LOG_LEVEL)
     """
     import os
-    
+
     # Get root log level
     root_log_level_str = config.log_level
     root_log_level = getattr(logging, root_log_level_str, logging.INFO)
-    
+
     # Get Wisp Framework specific log level (if set)
     wisp_log_level_str = os.getenv("LOG_LEVEL_WISP_FRAMEWORK", root_log_level_str).upper()
     wisp_log_level = getattr(logging, wisp_log_level_str, root_log_level)
@@ -56,7 +56,7 @@ def setup_logging(config: AppConfig) -> None:
     # Suppress noisy loggers
     logging.getLogger("discord").setLevel(logging.WARNING)
     logging.getLogger("discord.http").setLevel(logging.WARNING)
-    
+
     # Set Wisp Framework logger level (allows suppressing WF logs separately)
     logging.getLogger("wisp_framework").setLevel(wisp_log_level)
 
