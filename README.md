@@ -434,6 +434,21 @@ Contributions are welcome! Please ensure:
 - Documentation is updated
 - Type hints are included
 
+## Documentation
+
+Complete developer documentation is available in the `docs/` directory:
+
+- **[Documentation Index](docs/INDEX.md)** - Start here for complete documentation
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation
+- **[Architecture Overview](docs/ARCHITECTURE.md)** - Framework architecture and design
+- **[Module Development Guide](docs/MODULE_DEVELOPMENT.md)** - Creating and developing modules
+- **[Services Documentation](docs/SERVICES.md)** - Available services and usage
+- **[Configuration Reference](docs/CONFIGURATION.md)** - Complete configuration options
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment instructions
+- **[Examples](docs/EXAMPLES.md)** - Code examples and tutorials
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Contributing Guide](docs/CONTRIBUTING.md)** - How to contribute
+
 ## Usage Examples
 
 See the [Usage Guide](docs/USAGE_GUIDE.md) for detailed examples and [Extensions Guide](docs/EXTENSIONS.md) for enhanced utilities.
