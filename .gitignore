@@ -67,7 +67,7 @@ dmypy.json
 *.sqlite3
 
 # Alembic
-alembic.ini
+# alembic.ini - Keep tracked as it contains project configuration
 
 # Type checking
 .pytype/
