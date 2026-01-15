@@ -84,18 +84,11 @@ class AppConfig:
 
     @property
     def discord_token(self) -> str:
-        """Discord bot token."""
+        """Discord bot token (read-only, must be set via DISCORD_TOKEN environment variable)."""
         token = os.getenv("DISCORD_TOKEN")
         if not token:
             raise ConfigError("DISCORD_TOKEN is required")
         return token
-
-    @discord_token.setter
-    def discord_token(self, value: str) -> None:
-        """Set Discord bot token."""
-        if not value:
-            raise ConfigError("DISCORD_TOKEN cannot be empty")
-        os.environ["DISCORD_TOKEN"] = value
 
     @property
     def database_url(self) -> str | None:
