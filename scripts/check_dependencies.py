@@ -178,6 +178,7 @@ def update_pyproject_toml(
     pyproject_path: Path,
     updates: List[Dict[str, str]],
     dry_run: bool = True,
+    is_poetry: bool = False,
 ) -> bool:
     """Update pyproject.toml with new dependency versions.
     
@@ -185,6 +186,7 @@ def update_pyproject_toml(
         pyproject_path: Path to pyproject.toml
         updates: List of update dictionaries with 'group', 'package', 'old_spec', 'new_spec'
         dry_run: If True, don't actually write changes
+        is_poetry: Whether this is Poetry format
         
     Returns:
         True if updates were made, False otherwise
@@ -198,18 +200,67 @@ def update_pyproject_toml(
     
     original_content = content
     
-    # Apply updates using regex with proper escaping
+    # Apply updates
     for update in updates:
+        package_name = update["package"]
         old_spec = update["old_spec"]
         new_spec = update["new_spec"]
         
-        # Escape special regex characters but preserve the pattern
-        # Replace the exact old_spec with new_spec
-        # Use word boundary-like matching for version specs
-        escaped_old = re.escape(old_spec)
-        
-        # Replace first occurrence (should be unique per dependency)
-        content = content.replace(old_spec, new_spec, 1)
+        if is_poetry:
+            # Poetry format: need to handle dict format and quoted names
+            # Pattern: package_name = "version" or package_name = {version = "version"}
+            # Handle quoted package names
+            quoted_name_pattern = rf'["\']?{re.escape(package_name)}["\']?\s*='
+            
+            # Try to find the line and replace version
+            lines = content.splitlines()
+            new_lines = []
+            for line in lines:
+                # Check if this line contains our package
+                if re.match(quoted_name_pattern, line.strip()) or line.strip().startswith(f"{package_name} ="):
+                    # Handle dict format: package = {version = "^0.22.1", ...}
+                    if "{" in line and "version" in line:
+                        # Replace version inside dict
+                        version_match = re.search(r'version\s*=\s*["\']?([^"\']+)["\']?', line)
+                        if version_match:
+                            old_version = version_match.group(1)
+                            # Extract new version from new_spec
+                            new_version_match = re.search(r'[\^~>=<]+(.+)', new_spec)
+                            if new_version_match:
+                                new_version = new_version_match.group(1)
+                                constraint_match = re.search(r'([\^~>=<]+)', new_spec)
+                                constraint = constraint_match.group(1) if constraint_match else "^"
+                                line = line.replace(f'version = "{old_version}"', f'version = "{constraint}{new_version}"')
+                                line = line.replace(f"version = '{old_version}'", f"version = '{constraint}{new_version}'")
+                                line = line.replace(f'version = {old_version}', f'version = "{constraint}{new_version}"')
+                    else:
+                        # String format: package = "^0.22.1"
+                        # Extract version from old_spec and new_spec
+                        old_version_match = re.search(r'[\^~>=<]+(.+)', old_spec)
+                        new_version_match = re.search(r'[\^~>=<]+(.+)', new_spec)
+                        if old_version_match and new_version_match:
+                            old_version = old_version_match.group(1)
+                            new_version = new_version_match.group(1)
+                            constraint_match = re.search(r'([\^~>=<]+)', new_spec)
+                            constraint = constraint_match.group(1) if constraint_match else "^"
+                            # Replace version, preserving quotes
+                            if f'"{old_version}"' in line:
+                                line = line.replace(f'"{old_version}"', f'"{constraint}{new_version}"')
+                            elif f"'{old_version}'" in line:
+                                line = line.replace(f"'{old_version}'", f"'{constraint}{new_version}'")
+                            else:
+                                line = re.sub(
+                                    rf'=\s*["\']?[\^~>=<]*{re.escape(old_version)}["\']?',
+                                    f'= "{constraint}{new_version}"',
+                                    line
+                                )
+                    new_lines.append(line)
+                else:
+                    new_lines.append(line)
+            content = "\n".join(new_lines)
+        else:
+            # PEP 621 format: simple string replacement
+            content = content.replace(old_spec, new_spec, 1)
     
     if dry_run:
         # Show summary
@@ -247,20 +298,27 @@ def update_pyproject_toml(
         return True
 
 
-def build_update_spec(package_name: str, current_spec: str, latest_version: str) -> str:
+def build_update_spec(
+    package_name: str, current_spec: str, latest_version: str, is_poetry: bool = False
+) -> str:
     """Build new dependency spec preserving constraint operator.
     
     Args:
         package_name: Package name
         current_spec: Current dependency specification
         latest_version: Latest available version
+        is_poetry: Whether this is Poetry format
         
     Returns:
         New dependency specification string
     """
     # Extract constraint operator
     constraint = None
-    if ">=" in current_spec:
+    if current_spec.startswith("^"):
+        constraint = "^"
+    elif current_spec.startswith("~"):
+        constraint = "~"
+    elif ">=" in current_spec:
         constraint = ">="
     elif "==" in current_spec:
         constraint = "=="
