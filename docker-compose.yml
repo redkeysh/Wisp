@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: discord_bot_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-discord_bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-discord_bot}
+      POSTGRES_DB: ${POSTGRES_DB:-discord_bot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discord_bot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bots_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: discord_bot_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bots_net
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discord_bot_migrate
+    env_file:
+      - .env.local
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-discord_bot}:${POSTGRES_PASSWORD:-discord_bot}@postgres:5432/${POSTGRES_DB:-discord_bot}
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bots_net
+    profiles:
+      - migrate
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discord_bot
+    env_file:
+      - .env.local
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-discord_bot}:${POSTGRES_PASSWORD:-discord_bot}@postgres:5432/${POSTGRES_DB:-discord_bot}
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bots_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+volumes:
+  postgres_data:
+
+networks:
+  bots_net:
+    name: bots_net
+    driver: bridge
