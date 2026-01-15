@@ -93,6 +93,13 @@ class AppConfig:
             raise ConfigError("DISCORD_TOKEN is required")
         return token
 
+    @discord_token.setter
+    def discord_token(self, value: str) -> None:
+        """Set Discord bot token."""
+        if not value:
+            raise ConfigError("DISCORD_TOKEN cannot be empty")
+        os.environ["DISCORD_TOKEN"] = value
+
     @property
     def database_url(self) -> Optional[str]:
         """Database connection URL (optional)."""
