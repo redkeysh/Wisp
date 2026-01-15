@@ -75,5 +75,7 @@ alembic.ini
 # Distribution / packaging
 *.whl
 
-# Developer notes and summaries
+# Developer notes and wiki
 dev-notes/
+wiki/
+
