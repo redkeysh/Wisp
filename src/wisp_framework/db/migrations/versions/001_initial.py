@@ -41,8 +41,8 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.Comment('Tracks which modules are enabled/disabled per guild')
     )
+    op.execute(sa.text("COMMENT ON TABLE module_states IS 'Tracks which modules are enabled/disabled per guild'"))
     op.create_index(op.f('ix_module_states_guild_id'), 'module_states', ['guild_id'], unique=False)
     op.create_index(op.f('ix_module_states_module_name'), 'module_states', ['module_name'], unique=False)
 
@@ -57,8 +57,8 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.Comment('Generic key-value storage for per-guild data')
     )
+    op.execute(sa.text("COMMENT ON TABLE guild_data IS 'Generic key-value storage for per-guild data'"))
     op.create_index(op.f('ix_guild_data_guild_id'), 'guild_data', ['guild_id'], unique=False)
     op.create_index(op.f('ix_guild_data_key'), 'guild_data', ['key'], unique=False)
     op.create_index(op.f('ix_guild_data_module_name'), 'guild_data', ['module_name'], unique=False)
