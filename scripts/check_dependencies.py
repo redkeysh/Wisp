@@ -324,19 +324,132 @@ def main():
     
     # Get dependencies
     dependencies = []
+    git_dependencies = []
     
-    # Main dependencies
-    if "project" in data and "dependencies" in data["project"]:
-        for dep in data["project"]["dependencies"]:
-            dependencies.append(("main", dep))
-    
-    # Optional dependencies
-    if "project" in data and "optional-dependencies" in data["project"]:
-        for group_name, group_deps in data["project"]["optional-dependencies"].items():
-            for dep in group_deps:
-                # Skip self-references (e.g., "wisp-framework[db]")
-                if not dep.startswith("wisp-framework"):
-                    dependencies.append((group_name, dep))
+    if is_poetry:
+        # Poetry format: [tool.poetry.dependencies]
+        if "poetry" in data["tool"] and "dependencies" in data["tool"]["poetry"]:
+            for package_name, version_spec in data["tool"]["poetry"]["dependencies"].items():
+                # Skip python dependency
+                if package_name.lower() == "python":
+                    continue
+                
+                # Check for git dependencies
+                if isinstance(version_spec, dict):
+                    if "git" in version_spec:
+                        git_url = version_spec.get("git", "")
+                        branch = version_spec.get("branch")
+                        tag = version_spec.get("tag")
+                        rev = version_spec.get("rev")
+                        git_info = f"git+{git_url}"
+                        if branch:
+                            git_info += f"@{branch}"
+                        elif tag:
+                            git_info += f"@{tag}"
+                        elif rev:
+                            git_info += f"@{rev}"
+                        git_dependencies.append({
+                            "group": "main",
+                            "package": package_name.strip('"').strip("'"),
+                            "source": git_info
+                        })
+                        continue
+                    elif "version" in version_spec:
+                        version_str = version_spec["version"]
+                        dep_spec = f"{package_name}{version_str}"
+                        dependencies.append(("main", dep_spec, package_name))
+                elif isinstance(version_spec, str):
+                    # Check if it's a git URL string
+                    if version_spec.startswith("git+") or version_spec.startswith("git://"):
+                        git_dependencies.append({
+                            "group": "main",
+                            "package": package_name.strip('"').strip("'"),
+                            "source": version_spec
+                        })
+                        continue
+                    else:
+                        dep_spec = f"{package_name}{version_spec}"
+                        dependencies.append(("main", dep_spec, package_name))
+        
+        # Poetry dev dependencies: [tool.poetry.group.dev.dependencies]
+        if "poetry" in data["tool"] and "group" in data["tool"]["poetry"]:
+            for group_name, group_data in data["tool"]["poetry"]["group"].items():
+                if "dependencies" in group_data:
+                    for package_name, version_spec in group_data["dependencies"].items():
+                        if package_name.lower() == "python":
+                            continue
+                        
+                        if isinstance(version_spec, dict):
+                            if "git" in version_spec:
+                                git_url = version_spec.get("git", "")
+                                branch = version_spec.get("branch")
+                                tag = version_spec.get("tag")
+                                rev = version_spec.get("rev")
+                                git_info = f"git+{git_url}"
+                                if branch:
+                                    git_info += f"@{branch}"
+                                elif tag:
+                                    git_info += f"@{tag}"
+                                elif rev:
+                                    git_info += f"@{rev}"
+                                git_dependencies.append({
+                                    "group": group_name,
+                                    "package": package_name.strip('"').strip("'"),
+                                    "source": git_info
+                                })
+                                continue
+                            elif "version" in version_spec:
+                                version_str = version_spec["version"]
+                                dep_spec = f"{package_name}{version_str}"
+                                dependencies.append((group_name, dep_spec, package_name))
+                        elif isinstance(version_spec, str):
+                            if version_spec.startswith("git+") or version_spec.startswith("git://"):
+                                git_dependencies.append({
+                                    "group": group_name,
+                                    "package": package_name.strip('"').strip("'"),
+                                    "source": version_spec
+                                })
+                                continue
+                            else:
+                                dep_spec = f"{package_name}{version_spec}"
+                                dependencies.append((group_name, dep_spec, package_name))
+    else:
+        # PEP 621 format: [project] dependencies
+        # Main dependencies
+        if "project" in data and "dependencies" in data["project"]:
+            for dep in data["project"]["dependencies"]:
+                # Check for git dependencies
+                if isinstance(dep, str) and (dep.startswith("git+") or dep.startswith("git://")):
+                    # Extract package name from git URL if possible
+                    package_match = re.search(r'#egg=([^&]+)', dep)
+                    package_name = package_match.group(1) if package_match else dep.split("/")[-1].replace(".git", "")
+                    git_dependencies.append({
+                        "group": "main",
+                        "package": package_name,
+                        "source": dep
+                    })
+                else:
+                    dependencies.append(("main", dep, None))
+        
+        # Optional dependencies
+        if "project" in data and "optional-dependencies" in data["project"]:
+            for group_name, group_deps in data["project"]["optional-dependencies"].items():
+                for dep in group_deps:
+                    # Skip self-references (e.g., "wisp-framework[db]")
+                    if isinstance(dep, str) and dep.startswith("wisp-framework"):
+                        continue
+                    
+                    # Check for git dependencies
+                    if isinstance(dep, str) and (dep.startswith("git+") or dep.startswith("git://")):
+                        package_match = re.search(r'#egg=([^&]+)', dep)
+                        package_name = package_match.group(1) if package_match else dep.split("/")[-1].replace(".git", "")
+                        git_dependencies.append({
+                            "group": group_name,
+                            "package": package_name,
+                            "source": dep
+                        })
+                    else:
+                        dependencies.append((group_name, dep, None))
     
     if not dependencies:
         print("No dependencies found")
@@ -365,8 +478,12 @@ def main():
             # PEP 621 format: extract from spec
             package_name = dep_spec.split("[")[0].split(">=")[0].split("==")[0].split("~=")[0].split("^")[0].split("~")[0].split(">")[0].split("<")[0].strip().strip('"').strip("'")
         
-        # Skip if it's a git URL or python
-        if package_name.startswith("git+") or package_name.lower() == "python":
+        # Skip python dependency
+        if package_name.lower() == "python":
+            continue
+        
+        # Skip if it's a git URL (should already be filtered, but double-check)
+        if package_name.startswith("git+") or package_name.startswith("git://"):
             continue
         
         current_version, constraint = parse_version_spec(dep_spec)
