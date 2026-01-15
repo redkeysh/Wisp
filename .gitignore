@@ -78,4 +78,5 @@ dmypy.json
 # Developer notes and wiki
 dev-notes/
 wiki/
+tests/
 
