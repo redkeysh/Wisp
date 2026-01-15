@@ -2,6 +2,21 @@
 
 Complete API documentation for the Wisp Framework.
 
+> **See also:** [[Architecture-Overview]] | [[Module-Development]] | [[Services-Documentation]]
+
+## Quick Import Reference
+
+The main classes and functions you'll use:
+
+```python
+from wisp_framework import WispBot, create_app, Module, ModuleRegistry
+from wisp_framework.config import AppConfig
+from wisp_framework.context import BotContext
+from wisp_framework.lifecycle import LifecycleManager
+```
+
+**Important:** There is no `Wisp` class. Use `WispBot` (the main bot class) or `create_app()` (convenience function) instead.
+
 ## Table of Contents
 
 - [Core Classes](#core-classes)
@@ -15,18 +30,18 @@ Complete API documentation for the Wisp Framework.
 
 ## Core Classes
 
-### `FrameworkBot`
+### `WispBot`
 
-Main bot class extending `discord.ext.commands.Bot`.
+Main bot class for Wisp Framework, extending `discord.ext.commands.Bot`.
 
 ```python
-from wisp_framework import FrameworkBot
+from wisp_framework import WispBot
 ```
 
 #### Constructor
 
 ```python
-FrameworkBot(
+WispBot(
     config: AppConfig,
     services: ServiceContainer,
     module_registry: ModuleRegistry,

@@ -70,12 +70,18 @@ pip install -e ".[db,redis,all]"
 Once installed, you can import and use the framework:
 
 ```python
-from wisp_framework import FrameworkBot, Module
+# Recommended: Use create_app() convenience function
+from wisp_framework import create_app
+
+bot, lifecycle, ctx = create_app()
+
+# Or use WispBot directly
+from wisp_framework import WispBot, Module
 from wisp_framework.config import AppConfig
 from wisp_framework.lifecycle import LifecycleManager
-
-# Use the framework
 ```
+
+**Note:** There is no `Wisp` class. Use `WispBot` (the main bot class) or `create_app()` (convenience function) instead. See the [[Usage-Guide]] for complete examples.
 
 ### Option 2: requirements.txt
 

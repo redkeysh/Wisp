@@ -186,14 +186,14 @@ def test_basic_functionality():
         print(f"❌ Module import failed: {e}")
         tests.append(("Module import", False))
     
-    # Test FrameworkBot class
+    # Test WispBot class
     try:
-        from wisp_framework.bot import FrameworkBot
-        print("✅ FrameworkBot class import successful")
-        tests.append(("FrameworkBot import", True))
+        from wisp_framework.bot import WispBot
+        print("✅ WispBot class import successful")
+        tests.append(("WispBot import", True))
     except Exception as e:
-        print(f"❌ FrameworkBot import failed: {e}")
-        tests.append(("FrameworkBot import", False))
+        print(f"❌ WispBot import failed: {e}")
+        tests.append(("WispBot import", False))
     
     # Test ServiceContainer
     try:

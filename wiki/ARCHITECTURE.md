@@ -50,7 +50,7 @@ Built-in support for production concerns:
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────┐
-│                  FrameworkBot                           │
+│                  WispBot                               │
 │  - Command handling                                     │
 │  - Event processing                                     │
 │  - Module lifecycle                                     │
@@ -81,7 +81,7 @@ Built-in support for production concerns:
 User Command
     │
     ▼
-FrameworkBot.on_app_command_completion()
+WispBot.on_app_command_completion()
     │
     ▼
 Module Command Handler
@@ -290,7 +290,7 @@ See [[Module-Development]].
 
 ### Extending Bot Functionality
 
-- Override `FrameworkBot` methods
+- Override `WispBot` methods
 - Add custom event handlers
 - Extend `BotContext` with custom services
 - Create utility functions in `utils/`

@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from wisp_framework.bot import FrameworkBot
+from wisp_framework.bot import WispBot
 from wisp_framework.config import AppConfig
 from wisp_framework.context import BotContext
 from wisp_framework.feature_flags import FeatureFlags
@@ -20,7 +20,7 @@ def create_app(
     config: Optional[AppConfig] = None,
     auto_discover_modules: bool = False,
     module_package: str = "wisp_framework.modules",
-) -> tuple[FrameworkBot, LifecycleManager, BotContext]:
+) -> tuple[WispBot, LifecycleManager, BotContext]:
     """Create and configure a Discord bot application.
     
     Args:
@@ -56,6 +56,6 @@ def create_app(
     lifecycle = LifecycleManager()
     
     # Create bot (but don't start it yet)
-    bot = FrameworkBot(config, services, module_registry, ctx)
+    bot = WispBot(config, services, module_registry, ctx)
     
     return bot, lifecycle, ctx

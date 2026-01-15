@@ -34,7 +34,8 @@ Common issues and solutions for the Wisp Framework.
 - Verify installation: `pip show wisp-framework`
 - Check Python environment
 - Reinstall: `pip install --force-reinstall git+https://github.com/redkeysh/wisp.git`
-- Check import path: `from wisp_framework import ...`
+- Check import path: `from wisp_framework import WispBot, create_app, Module, ...`
+- **Common error:** `cannot import name 'Wisp'` - There is no `Wisp` class. Use `WispBot` (the main bot class) or `create_app()` (convenience function) instead.
 
 ## Configuration Issues
 

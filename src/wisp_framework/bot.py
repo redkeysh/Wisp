@@ -1,4 +1,4 @@
-"""FrameworkBot - The main bot class."""
+"""WispBot - The main bot class for Wisp Framework."""
 
 import logging
 from datetime import datetime
@@ -19,8 +19,8 @@ from wisp_framework.services.base import ServiceContainer
 logger = logging.getLogger(__name__)
 
 
-class FrameworkBot(commands.Bot):
-    """Main bot class extending discord.py Bot."""
+class WispBot(commands.Bot):
+    """Main bot class for Wisp Framework, extending discord.py Bot."""
 
     def __init__(
         self,

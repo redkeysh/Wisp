@@ -5,7 +5,7 @@ import logging
 import signal
 from typing import Any, Optional
 
-from wisp_framework.bot import FrameworkBot
+from wisp_framework.bot import WispBot
 from wisp_framework.config import AppConfig
 from wisp_framework.context import BotContext
 from wisp_framework.feature_flags import FeatureFlags
@@ -27,7 +27,7 @@ class LifecycleManager:
 
     def __init__(self) -> None:
         """Initialize lifecycle manager."""
-        self.bot: Optional[FrameworkBot] = None
+        self.bot: Optional[WispBot] = None
         self._shutdown_event = asyncio.Event()
 
     async def startup(
@@ -36,7 +36,7 @@ class LifecycleManager:
         services: ServiceContainer,
         module_registry: ModuleRegistry,
         ctx: BotContext,
-    ) -> FrameworkBot:
+    ) -> WispBot:
         """Start up the bot and all services."""
         logger.info("Starting bot lifecycle...")
 
@@ -44,7 +44,7 @@ class LifecycleManager:
         await services.startup_all()
 
         # Create bot
-        bot = FrameworkBot(config, services, module_registry, ctx)
+        bot = WispBot(config, services, module_registry, ctx)
         self.bot = bot
 
         # Set up signal handlers for graceful shutdown

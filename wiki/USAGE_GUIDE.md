@@ -19,6 +19,26 @@ pip install wisp-framework[all]
 
 ## Quick Start: Creating Your Own Bot
 
+### Importing the Framework
+
+The Wisp Framework provides several ways to create a bot:
+
+**Option 1: Using `create_app()` (Recommended)**
+```python
+from wisp_framework import create_app
+
+bot, lifecycle, ctx = create_app()
+```
+
+**Option 2: Using `WispBot` directly**
+```python
+from wisp_framework import WispBot
+from wisp_framework.config import AppConfig
+# ... other imports
+```
+
+**Important:** There is no `Wisp` class. Use `WispBot` (the main bot class) or `create_app()` (convenience function) instead.
+
 ### 1. Create a Simple Bot
 
 Create a file `my_bot.py`:
