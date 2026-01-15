@@ -4,6 +4,7 @@ from typing import Any
 
 import discord
 from discord import app_commands
+from discord.ext import commands
 
 from wisp_framework.module import Module
 from wisp_framework.utils.decorators import (
@@ -153,6 +154,25 @@ class CoreAdminModule(Module):
                 fields=[{"name": "Commands", "value": str(len(synced)), "inline": True}]
             )
             await respond_success(interaction, f"Synced {len(synced)} command(s)", embed=embed)
+
+        @bot.command(name="sync")
+        @commands.is_owner()
+        async def sync_prefixed_command(ctx: commands.Context) -> None:
+            """Sync commands manually (prefixed command)."""
+            try:
+                synced = await bot.sync_commands()
+                embed = EmbedBuilder.success(
+                    title="Commands Synced",
+                    description=f"Successfully synced {len(synced)} command(s).",
+                    fields=[{"name": "Commands", "value": str(len(synced)), "inline": True}]
+                )
+                await ctx.send(embed=embed)
+            except Exception as e:
+                embed = EmbedBuilder.error(
+                    title="Sync Failed",
+                    description=f"Failed to sync commands: {str(e)}"
+                )
+                await ctx.send(embed=embed)
 
         @tree.command(name="botinfo", description="Show bot information")
         @handle_errors
