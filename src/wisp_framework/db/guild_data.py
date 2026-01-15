@@ -3,12 +3,19 @@
 import logging
 from typing import Any
 
-from sqlalchemy import select
-
-from wisp_framework.db.models import GuildData
 from wisp_framework.services.db import DatabaseService
 
 logger = logging.getLogger(__name__)
+
+# Conditional SQLAlchemy imports
+try:
+    from sqlalchemy import select
+
+    from wisp_framework.db.models import GuildData
+    SQLALCHEMY_AVAILABLE = True
+except ImportError:
+    SQLALCHEMY_AVAILABLE = False
+    GuildData = None  # type: ignore[assignment,misc]
 
 
 class GuildDataService:
@@ -64,8 +71,12 @@ class GuildDataService:
         self._memory_cache[cache_key] = value
 
         # Try database
-        if self._db_service and self._db_service.session_factory:
+        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
             try:
+                from sqlalchemy import select
+
+                from wisp_framework.db.models import GuildData
+
                 async with self._db_service.session_factory() as session:
                     stmt = select(GuildData).where(
                         GuildData.guild_id == guild_id,
@@ -103,8 +114,12 @@ class GuildDataService:
         self._memory_cache.pop(cache_key, None)
 
         # Try database
-        if self._db_service and self._db_service.session_factory:
+        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
             try:
+                from sqlalchemy import select
+
+                from wisp_framework.db.models import GuildData
+
                 async with self._db_service.session_factory() as session:
                     stmt = select(GuildData).where(
                         GuildData.guild_id == guild_id,
@@ -128,8 +143,12 @@ class GuildDataService:
         result: dict[str, Any] = {}
 
         # Try database first
-        if self._db_service and self._db_service.session_factory:
+        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
             try:
+                from sqlalchemy import select
+
+                from wisp_framework.db.models import GuildData
+
                 async with self._db_service.session_factory() as session:
                     stmt = select(GuildData).where(GuildData.guild_id == guild_id)
                     if module_name:
