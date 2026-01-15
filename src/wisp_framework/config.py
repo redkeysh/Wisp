@@ -64,12 +64,21 @@ class AppConfig:
         self.intents = discord.Intents(**intents_dict)
 
     def _get_bool(self, key: str, default: bool = False) -> bool:
-        """Get boolean value from environment variable."""
-        value = os.getenv(key, "").lower()
+        """Get boolean value from environment variable.
+        
+        If the environment variable is not set, returns the default.
+        If set to empty string, treats as False (explicitly disabled).
+        """
+        value = os.getenv(key)
+        if value is None:
+            # Environment variable not set - use default
+            return default
+        value = value.lower().strip()
         if value in ("true", "1", "yes", "on"):
             return True
         elif value in ("false", "0", "no", "off", ""):
             return False
+        # Unknown value - use default
         return default
 
     def _get_int(self, key: str, default: int | None = None) -> int | None:
