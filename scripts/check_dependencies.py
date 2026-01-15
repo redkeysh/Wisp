@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Check dependency versions against latest available versions."""
+"""Check dependency versions against latest available versions and optionally update them."""
 
+import argparse
 import json
 import re
 import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
-from urllib.request import urlopen
-from urllib.error import URLError
+from typing import Dict, List, Optional, Tuple
 
 # Fix Windows console encoding
 if sys.platform == "win32":
@@ -25,6 +24,13 @@ except ImportError:
         sys.exit(1)
     else:
         tomli = None
+
+try:
+    from urllib.request import urlopen
+    from urllib.error import URLError
+except ImportError:
+    print("Error: urllib not available")
+    sys.exit(1)
 
 
 def get_latest_version(package_name: str) -> Optional[str]:
@@ -107,8 +113,135 @@ def format_status(status: str) -> str:
     return f"{status_map.get(status, '❓')} {status.upper()}"
 
 
+def update_pyproject_toml(
+    pyproject_path: Path,
+    updates: List[Dict[str, str]],
+    dry_run: bool = True,
+) -> bool:
+    """Update pyproject.toml with new dependency versions.
+    
+    Args:
+        pyproject_path: Path to pyproject.toml
+        updates: List of update dictionaries with 'group', 'package', 'old_spec', 'new_spec'
+        dry_run: If True, don't actually write changes
+        
+    Returns:
+        True if updates were made, False otherwise
+    """
+    if not updates:
+        return False
+    
+    # Read current file
+    with open(pyproject_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    original_content = content
+    
+    # Apply updates using regex with proper escaping
+    for update in updates:
+        old_spec = update["old_spec"]
+        new_spec = update["new_spec"]
+        
+        # Escape special regex characters but preserve the pattern
+        # Replace the exact old_spec with new_spec
+        # Use word boundary-like matching for version specs
+        escaped_old = re.escape(old_spec)
+        
+        # Replace first occurrence (should be unique per dependency)
+        content = content.replace(old_spec, new_spec, 1)
+    
+    if dry_run:
+        # Show summary
+        print("\n" + "=" * 80)
+        print("PROPOSED CHANGES (DRY RUN)")
+        print("=" * 80)
+        print()
+        
+        # Show line-by-line diff for changed lines
+        original_lines = original_content.splitlines()
+        new_lines = content.splitlines()
+        
+        changes_found = False
+        for i, (old_line, new_line) in enumerate(zip(original_lines, new_lines), 1):
+            if old_line != new_line:
+                changes_found = True
+                print(f"Line {i}:")
+                print(f"  - {old_line}")
+                print(f"  + {new_line}")
+                print()
+        
+        if not changes_found:
+            # Fallback: show summary table
+            print("Summary of changes:")
+            for update in updates:
+                print(f"  {update['package']:<30} {update['old_spec']:<30} → {update['new_spec']}")
+            print()
+        
+        print("Run with --update to apply these changes")
+        return False
+    else:
+        # Write updated content
+        with open(pyproject_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return True
+
+
+def build_update_spec(package_name: str, current_spec: str, latest_version: str) -> str:
+    """Build new dependency spec preserving constraint operator.
+    
+    Args:
+        package_name: Package name
+        current_spec: Current dependency specification
+        latest_version: Latest available version
+        
+    Returns:
+        New dependency specification string
+    """
+    # Extract constraint operator
+    constraint = None
+    if ">=" in current_spec:
+        constraint = ">="
+    elif "==" in current_spec:
+        constraint = "=="
+    elif "~=" in current_spec:
+        constraint = "~="
+    elif ">" in current_spec:
+        constraint = ">"
+    
+    # Default to >= if no constraint found
+    if constraint is None:
+        constraint = ">="
+    
+    # Handle extras (e.g., "package[extra]>=1.0.0")
+    if "[" in current_spec:
+        extras_part = current_spec.split("[")[1].split("]")[0]
+        return f"{package_name}[{extras_part}]{constraint}{latest_version}"
+    else:
+        return f"{package_name}{constraint}{latest_version}"
+
+
 def main():
     """Main function."""
+    parser = argparse.ArgumentParser(
+        description="Check and optionally update dependency versions in pyproject.toml"
+    )
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Update pyproject.toml with latest versions (default: dry-run mode)",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip confirmation prompt when updating",
+    )
+    parser.add_argument(
+        "--only-outdated",
+        action="store_true",
+        help="Only update outdated packages",
+    )
+    args = parser.parse_args()
+    
     # Find pyproject.toml
     project_root = Path(__file__).parent.parent
     pyproject_path = project_root / "pyproject.toml"
@@ -228,12 +361,73 @@ def main():
     print(f"⚠️  Outdated: {outdated}")
     print(f"❓ Unknown: {unknown}")
     
+    # Prepare updates
+    updates = []
+    for result in results:
+        # Only update outdated packages (or all if --only-outdated is not set and status is not unknown)
+        should_update = False
+        if args.only_outdated:
+            should_update = result["status"] == "outdated"
+        else:
+            # Default: only update outdated packages
+            should_update = result["status"] == "outdated"
+        
+        if should_update and result["latest"]:
+            new_spec = build_update_spec(
+                result["package"],
+                result["spec"],
+                result["latest"]
+            )
+            # Only add if spec actually changes
+            if new_spec != result["spec"]:
+                updates.append({
+                    "group": result["group"],
+                    "package": result["package"],
+                    "old_spec": result["spec"],
+                    "new_spec": new_spec,
+                })
+    
     if outdated > 0:
         print()
         print("⚠️  Outdated packages:")
         for result in results:
             if result["status"] == "outdated":
                 print(f"  - {result['package']}: {result['current']} → {result['latest']}")
+    
+    if updates:
+        if args.update:
+            # Show what will be updated
+            print()
+            print("=" * 80)
+            print("UPDATES TO APPLY")
+            print("=" * 80)
+            print()
+            for update in updates:
+                print(f"  {update['package']:<30} {update['old_spec']:<30} → {update['new_spec']}")
+            print()
+            
+            if not args.yes:
+                response = input("Apply these updates? (yes/no): ").strip().lower()
+                if response not in ("yes", "y"):
+                    print("Update cancelled.")
+                    return
+            
+            # Apply updates
+            if update_pyproject_toml(pyproject_path, updates, dry_run=False):
+                print()
+                print("✅ pyproject.toml updated successfully!")
+                print()
+                print("Next steps:")
+                print("  1. Review the changes: git diff pyproject.toml")
+                print("  2. Test your project: python scripts/test_compatibility.py")
+                print("  3. Commit the changes: git add pyproject.toml && git commit -m 'chore: update dependencies'")
+        else:
+            # Dry run mode - show proposed changes
+            print()
+            update_pyproject_toml(pyproject_path, updates, dry_run=True)
+    elif outdated == 0:
+        print()
+        print("✅ All dependencies are up-to-date!")
 
 
 if __name__ == "__main__":
