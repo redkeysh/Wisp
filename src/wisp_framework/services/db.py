@@ -25,13 +25,14 @@ class DatabaseService(BaseService):
             self._mark_initialized()
             return
 
+        from sqlalchemy import text as sa_text
+        from sqlalchemy.ext.asyncio import (
+            AsyncSession,
+            async_sessionmaker,
+            create_async_engine,
+        )
+
         try:
-            import sqlalchemy as sa
-            from sqlalchemy.ext.asyncio import (
-                AsyncSession,
-                async_sessionmaker,
-                create_async_engine,
-            )
 
             # Create async engine with connection pooling
             self._engine = create_async_engine(
@@ -51,7 +52,7 @@ class DatabaseService(BaseService):
 
             # Test connection
             async with self._engine.begin() as conn:
-                await conn.execute(sa.text("SELECT 1"))
+                await conn.execute(sa_text("SELECT 1"))
 
             logger.info("Database service started successfully")
             self._mark_initialized()
@@ -60,10 +61,6 @@ class DatabaseService(BaseService):
             # Note: This requires accessing the service container, which we don't have here
             # Health status will be checked dynamically
 
-        except ImportError:
-            logger.warning(
-                "SQLAlchemy not installed. Install with: pip install wisp-framework[db]"
-            )
         except Exception as e:
             logger.error(f"Failed to start database service: {e}", exc_info=True)
             raise

@@ -25,11 +25,11 @@ classifiers = [
 
 dependencies = [
     "discord.py>=2.6.4",
+    "sqlalchemy>=2.0.45",
 ]
 
 [project.optional-dependencies]
 db = [
-    "sqlalchemy>=2.0.45",
     "asyncpg>=0.31.0",
     "alembic>=1.18.1",
 ]

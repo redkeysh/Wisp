@@ -2,17 +2,12 @@
 
 import logging
 
+from sqlalchemy import select
+
+from wisp_framework.db.models import ModuleState
 from wisp_framework.services.db import DatabaseService
 
 logger = logging.getLogger(__name__)
-
-# Conditional SQLAlchemy imports
-try:
-    from wisp_framework.db.models import ModuleState
-    SQLALCHEMY_AVAILABLE = True
-except ImportError:
-    SQLALCHEMY_AVAILABLE = False
-    ModuleState = None  # type: ignore[assignment,misc]
 
 
 class FeatureFlags:
@@ -30,12 +25,8 @@ class FeatureFlags:
         cache_key = (guild_id, module_name)
 
         # Try database first
-        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
+        if self._db_service and self._db_service.session_factory:
             try:
-                from sqlalchemy import select
-
-                from wisp_framework.db.models import ModuleState
-
                 async with self._db_service.session_factory() as session:
                     stmt = select(ModuleState).where(
                         ModuleState.guild_id == guild_id,
@@ -63,12 +54,8 @@ class FeatureFlags:
         self._memory_cache[cache_key] = enabled
 
         # Try database
-        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
+        if self._db_service and self._db_service.session_factory:
             try:
-                from sqlalchemy import select
-
-                from wisp_framework.db.models import ModuleState
-
                 async with self._db_service.session_factory() as session:
                     stmt = select(ModuleState).where(
                         ModuleState.guild_id == guild_id,
@@ -96,12 +83,8 @@ class FeatureFlags:
         result: dict[str, bool] = {}
 
         # Try database first
-        if SQLALCHEMY_AVAILABLE and self._db_service and self._db_service.session_factory:
+        if self._db_service and self._db_service.session_factory:
             try:
-                from sqlalchemy import select
-
-                from wisp_framework.db.models import ModuleState
-
                 async with self._db_service.session_factory() as session:
                     stmt = select(ModuleState).where(ModuleState.guild_id == guild_id)
                     db_result = await session.execute(stmt)
