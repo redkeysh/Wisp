@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional
 
 from wisp_framework.services.base import BaseService
 
