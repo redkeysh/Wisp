@@ -44,9 +44,70 @@ def get_latest_version(package_name: str) -> Optional[str]:
         return None
 
 
+def parse_poetry_version_constraint(version_spec: str) -> Tuple[str, Optional[str]]:
+    """Parse Poetry version constraints (^, ~, etc.).
+    
+    Args:
+        version_spec: Version string like "^0.22.1" or "~2.3.0"
+        
+    Returns:
+        Tuple of (base_version, constraint_type)
+    """
+    version_spec = version_spec.strip().strip('"').strip("'")
+    
+    # Caret (^) means compatible version: ^1.2.3 = >=1.2.3,<2.0.0
+    if version_spec.startswith("^"):
+        base_version = version_spec[1:]
+        return base_version, "^"
+    
+    # Tilde (~) means approximately: ~1.2.3 = >=1.2.3,<1.3.0
+    if version_spec.startswith("~"):
+        base_version = version_spec[1:]
+        return base_version, "~"
+    
+    # Standard constraints
+    if ">=" in version_spec:
+        parts = version_spec.split(">=")
+        if len(parts) == 2:
+            return parts[1].strip(), ">="
+    elif "==" in version_spec:
+        parts = version_spec.split("==")
+        if len(parts) == 2:
+            return parts[1].strip(), "=="
+    elif "~=" in version_spec:
+        parts = version_spec.split("~=")
+        if len(parts) == 2:
+            return parts[1].strip(), "~="
+    elif ">" in version_spec:
+        parts = version_spec.split(">")
+        if len(parts) == 2:
+            return parts[1].strip(), ">"
+    elif "<=" in version_spec:
+        parts = version_spec.split("<=")
+        if len(parts) == 2:
+            return parts[1].strip(), "<="
+    elif "<" in version_spec:
+        parts = version_spec.split("<")
+        if len(parts) == 2:
+            return parts[1].strip(), "<"
+    
+    # Try to extract version number
+    match = re.search(r'(\d+\.\d+\.\d+)', version_spec)
+    if match:
+        return match.group(1), None
+    
+    return version_spec, None
+
+
 def parse_version_spec(spec: str) -> Tuple[str, Optional[str]]:
     """Parse version specification (e.g., '>=2.3.0' -> ('2.3.0', '>='))."""
     # Remove package name if present (e.g., "discord.py>=2.3.0")
+    spec = spec.strip().strip('"').strip("'")
+    
+    # Handle Poetry constraints
+    if spec.startswith("^") or spec.startswith("~"):
+        return parse_poetry_version_constraint(spec)
+    
     if ">=" in spec:
         parts = spec.split(">=")
         if len(parts) == 2:
@@ -258,6 +319,9 @@ def main():
             import tomllib
             data = tomllib.load(f)
     
+    # Check for Poetry format
+    is_poetry = "tool" in data and "poetry" in data["tool"]
+    
     # Get dependencies
     dependencies = []
     
@@ -285,12 +349,24 @@ def main():
     
     results = []
     
-    for group, dep_spec in dependencies:
-        # Extract package name (handle extras and version specs)
-        package_name = dep_spec.split("[")[0].split(">=")[0].split("==")[0].split("~=")[0].split(">")[0].split("<")[0].strip()
+    for dep_tuple in dependencies:
+        if len(dep_tuple) == 3:
+            group, dep_spec, package_name_override = dep_tuple
+        else:
+            # Backward compatibility
+            group, dep_spec = dep_tuple
+            package_name_override = None
         
-        # Skip if it's a git URL
-        if package_name.startswith("git+"):
+        # Extract package name
+        if package_name_override:
+            # Poetry format: package name is provided directly
+            package_name = package_name_override.strip('"').strip("'")
+        else:
+            # PEP 621 format: extract from spec
+            package_name = dep_spec.split("[")[0].split(">=")[0].split("==")[0].split("~=")[0].split("^")[0].split("~")[0].split(">")[0].split("<")[0].strip().strip('"').strip("'")
+        
+        # Skip if it's a git URL or python
+        if package_name.startswith("git+") or package_name.lower() == "python":
             continue
         
         current_version, constraint = parse_version_spec(dep_spec)
@@ -376,7 +452,8 @@ def main():
             new_spec = build_update_spec(
                 result["package"],
                 result["spec"],
-                result["latest"]
+                result["latest"],
+                is_poetry=is_poetry
             )
             # Only add if spec actually changes
             if new_spec != result["spec"]:
@@ -413,7 +490,7 @@ def main():
                     return
             
             # Apply updates
-            if update_pyproject_toml(pyproject_path, updates, dry_run=False):
+            if update_pyproject_toml(pyproject_path, updates, dry_run=False, is_poetry=is_poetry):
                 print()
                 print("✅ pyproject.toml updated successfully!")
                 print()
@@ -424,7 +501,7 @@ def main():
         else:
             # Dry run mode - show proposed changes
             print()
-            update_pyproject_toml(pyproject_path, updates, dry_run=True)
+            update_pyproject_toml(pyproject_path, updates, dry_run=True, is_poetry=is_poetry)
     elif outdated == 0:
         print()
         print("✅ All dependencies are up-to-date!")
