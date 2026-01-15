@@ -1,5 +1,13 @@
 # Wisp Framework
 
+[![GitHub release](https://img.shields.io/github/v/release/redkeysh/wisp?style=flat-square)](https://github.com/redkeysh/wisp/releases)
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg?style=flat-square)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/redkeysh/wisp?style=flat-square)](https://github.com/redkeysh/wisp/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/redkeysh/wisp?style=flat-square)](https://github.com/redkeysh/wisp/network)
+[![GitHub issues](https://img.shields.io/github/issues/redkeysh/wisp?style=flat-square)](https://github.com/redkeysh/wisp/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/redkeysh/wisp?style=flat-square)](https://github.com/redkeysh/wisp/commits/main)
+
 A production-grade, modular Discord bot framework built with Python 3.13+ and discord.py. This framework provides a clean architecture for building Discord bots with optional database support, per-guild module management, and a comprehensive service system.
 
 ## Features
