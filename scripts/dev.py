@@ -33,6 +33,8 @@ class Colors:
 
 def print_status(msg: str) -> None:
     """Print a status message."""
+    # Replace checkmark with [OK] for Windows compatibility
+    msg = msg.replace("✓", "[OK]")
     print(f"{Colors.GREEN}>>>{Colors.NC} {msg}")
 
 
