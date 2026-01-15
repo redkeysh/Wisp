@@ -44,6 +44,113 @@ def get_latest_version(package_name: str) -> Optional[str]:
         return None
 
 
+def get_latest_git_tag(git_url: str) -> Optional[str]:
+    """Get the latest semantic version tag from a git repository.
+    
+    Args:
+        git_url: Git repository URL (e.g., https://github.com/user/repo.git)
+        
+    Returns:
+        Latest version tag (e.g., "v1.2.3" or "1.2.3") or None if not found
+    """
+    try:
+        # Normalize git URL
+        git_url = git_url.replace("git+", "").replace(".git", "")
+        if git_url.startswith("git://"):
+            git_url = git_url.replace("git://", "https://")
+        
+        # Try GitHub API first
+        if "github.com" in git_url:
+            # Extract owner/repo from URL
+            match = re.search(r'github\.com[:/]([^/]+)/([^/]+)', git_url)
+            if match:
+                owner, repo = match.groups()
+                api_url = f"https://api.github.com/repos/{owner}/{repo}/tags"
+                try:
+                    with urlopen(api_url, timeout=5) as response:
+                        tags_data = json.loads(response.read())
+                        if tags_data and isinstance(tags_data, list):
+                            # Find latest semantic version tag
+                            versions = []
+                            for tag_info in tags_data:
+                                tag_name = tag_info.get("name", "")
+                                # Remove 'v' prefix if present
+                                version_str = tag_name.lstrip("v")
+                                # Check if it's a valid semantic version
+                                if re.match(r'^\d+\.\d+\.\d+', version_str):
+                                    versions.append((version_str, tag_name))
+                            
+                            if versions:
+                                # Sort by version and return latest
+                                versions.sort(key=lambda x: tuple(map(int, x[0].split('.'))), reverse=True)
+                                return versions[0][1]  # Return original tag name with 'v' if present
+                except (URLError, KeyError, json.JSONDecodeError):
+                    pass
+        
+        # Try GitLab API
+        if "gitlab.com" in git_url:
+            match = re.search(r'gitlab\.com[:/]([^/]+)/([^/]+)', git_url)
+            if match:
+                owner, repo = match.groups()
+                # GitLab API uses encoded project path
+                project_path = f"{owner}/{repo}".replace("/", "%2F")
+                api_url = f"https://gitlab.com/api/v4/projects/{project_path}/repository/tags"
+                try:
+                    with urlopen(api_url, timeout=5) as response:
+                        tags_data = json.loads(response.read())
+                        if tags_data and isinstance(tags_data, list):
+                            versions = []
+                            for tag_info in tags_data:
+                                tag_name = tag_info.get("name", "")
+                                version_str = tag_name.lstrip("v")
+                                if re.match(r'^\d+\.\d+\.\d+', version_str):
+                                    versions.append((version_str, tag_name))
+                            
+                            if versions:
+                                versions.sort(key=lambda x: tuple(map(int, x[0].split('.'))), reverse=True)
+                                return versions[0][1]
+                except (URLError, KeyError, json.JSONDecodeError):
+                    pass
+        
+        # Fallback: Try to fetch tags using git command (if available)
+        # This would require subprocess, which we'll skip for now to avoid dependencies
+        
+    except Exception:
+        pass
+    
+    return None
+
+
+def extract_git_info(git_source: str) -> Dict[str, Optional[str]]:
+    """Extract git repository URL and reference (tag/branch/rev) from git source.
+    
+    Args:
+        git_source: Git source string (e.g., "git+https://github.com/user/repo.git@v1.0.0")
+        
+    Returns:
+        Dictionary with 'url', 'ref', 'ref_type' (tag/branch/rev)
+    """
+    result = {"url": None, "ref": None, "ref_type": None}
+    
+    # Handle format: git+https://...@tag
+    if "@" in git_source:
+        parts = git_source.rsplit("@", 1)
+        result["url"] = parts[0].replace("git+", "")
+        ref = parts[1]
+        
+        # Try to determine if it's a tag (semantic version) or branch
+        if re.match(r'^v?\d+\.\d+\.\d+', ref) or re.match(r'^\d+\.\d+\.\d+', ref):
+            result["ref_type"] = "tag"
+        else:
+            result["ref_type"] = "branch"
+        result["ref"] = ref
+    else:
+        result["url"] = git_source.replace("git+", "")
+        result["ref_type"] = "default"  # No specific ref
+    
+    return result
+
+
 def parse_poetry_version_constraint(version_spec: str) -> Tuple[str, Optional[str]]:
     """Parse Poetry version constraints (^, ~, etc.).
     
@@ -592,6 +699,37 @@ def main():
             if result["constraint"]:
                 print(f"  └─ Constraint: {result['constraint']}")
     
+    # Check git dependencies for updates
+    git_results = []
+    for git_dep in git_dependencies:
+        git_info = extract_git_info(git_dep["source"])
+        latest_tag = get_latest_git_tag(git_info["url"])
+        
+        current_ref = git_info.get("ref", "default")
+        ref_type = git_info.get("ref_type", "default")
+        
+        status = "unknown"
+        if latest_tag and ref_type == "tag":
+            # Compare semantic versions
+            current_version = current_ref.lstrip("v")
+            latest_version = latest_tag.lstrip("v")
+            status = compare_versions(current_version, latest_version)
+        elif latest_tag and ref_type != "tag":
+            # Has tags available but using branch/default
+            status = "has-tags"
+        elif not latest_tag:
+            status = "no-tags"
+        
+        git_results.append({
+            "package": git_dep["package"],
+            "group": git_dep["group"],
+            "source": git_dep["source"],
+            "current_ref": current_ref,
+            "ref_type": ref_type,
+            "latest_tag": latest_tag,
+            "status": status
+        })
+    
     # Print git dependencies if any
     if git_dependencies:
         print()
@@ -641,9 +779,32 @@ def main():
     print(f"  ❓ Unknown: {unknown}")
     
     if git_dependencies:
+        git_status_counts = {}
+        for git_result in git_results:
+            status = git_result["status"]
+            git_status_counts[status] = git_status_counts.get(status, 0) + 1
+        
         print(f"\nGit dependencies: {len(git_dependencies)}")
-        for git_dep in git_dependencies:
-            print(f"  - {git_dep['package']} ({git_dep['group']})")
+        up_to_date_git = git_status_counts.get("up-to-date", 0)
+        outdated_git = git_status_counts.get("outdated", 0)
+        has_tags_git = git_status_counts.get("has-tags", 0)
+        no_tags_git = git_status_counts.get("no-tags", 0)
+        
+        if up_to_date_git > 0:
+            print(f"  ✅ Up-to-date: {up_to_date_git}")
+        if outdated_git > 0:
+            print(f"  ⚠️  Outdated: {outdated_git}")
+        if has_tags_git > 0:
+            print(f"  📦 Has tags available: {has_tags_git}")
+        if no_tags_git > 0:
+            print(f"  ❓ No tags found: {no_tags_git}")
+        
+        # List outdated git dependencies
+        if outdated_git > 0:
+            print("\n  ⚠️  Outdated git dependencies:")
+            for git_result in git_results:
+                if git_result["status"] == "outdated":
+                    print(f"    - {git_result['package']}: {git_result['current_ref']} → {git_result['latest_tag']}")
     
     # Prepare updates
     updates = []
