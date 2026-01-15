@@ -1,11 +1,70 @@
-.PHONY: help build push dev-up dev-down prod-up prod-down migrate clean test lint
+.PHONY: help build push dev-up dev-down prod-up prod-down migrate clean test lint format check ci install install-dev install-test build-package
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Available targets:'
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+# Development targets
+install: ## Install package in development mode (base only)
+	python -m pip install --upgrade pip
+	pip install -e .
+
+install-dev: ## Install package with all extras
+	python -m pip install --upgrade pip
+	pip install -e .[all]
+
+install-test: ## Install test dependencies
+	python -m pip install --upgrade pip
+	pip install pytest pytest-asyncio pytest-cov
+
+lint: ## Run linter (ruff check)
+	ruff check src/
+
+format: ## Format code with ruff
+	ruff format src/
+
+format-check: ## Check code formatting without modifying
+	ruff format --check src/
+
+check: lint format-check ## Run linting and format checks
+
+test: ## Run tests (base installation)
+	pytest tests/ -v
+
+test-cov: ## Run tests with coverage
+	pytest tests/ -v --cov=src --cov-report=term --cov-report=xml
+
+test-db: ## Run tests with database extras installed
+	pip install -e .[db] pytest pytest-asyncio pytest-cov
+	pytest tests/ -v --cov=src --cov-report=term
+
+test-all: ## Run tests with all extras installed
+	pip install -e .[all] pytest pytest-asyncio pytest-cov
+	pytest tests/ -v --cov=src --cov-report=term
+
+test-matrix: ## Run tests with all CI matrix combinations (base, db, all)
+	@echo "=== Testing with base installation ==="
+	@pip install -e . pytest pytest-asyncio pytest-cov || true
+	@pytest tests/ -v --cov=src --cov-report=term || true
+	@echo ""
+	@echo "=== Testing with [db] extras ==="
+	@pip install -e .[db] pytest pytest-asyncio pytest-cov || true
+	@pytest tests/ -v --cov=src --cov-report=term || true
+	@echo ""
+	@echo "=== Testing with [all] extras ==="
+	@pip install -e .[all] pytest pytest-asyncio pytest-cov || true
+	@pytest tests/ -v --cov=src --cov-report=term || true
+
+ci: check test-cov ## Run full CI checks locally (lint + format + test)
+
+build-package: ## Build distribution packages (wheel and sdist)
+	python -m pip install --upgrade pip build
+	python -m build
+	@echo "Built packages in dist/"
+
+# Docker targets
 build: ## Build Docker image
 	docker build -t wisp-framework:latest .
 
@@ -36,19 +95,10 @@ migrate: ## Run database migrations
 		docker-compose -f docker-compose.prod.yml run --rm migrate; \
 	fi
 
-clean: ## Clean up Docker resources
+clean: ## Clean up Docker resources and build artifacts
 	docker-compose down -v
 	docker-compose -f docker-compose.prod.yml down -v
 	docker system prune -f
-
-test: ## Run tests
-	pytest tests/ -v
-
-lint: ## Run linter
-	ruff check src/
-
-install: ## Install package in development mode
-	pip install -e .
-
-install-dev: ## Install package with all extras
-	pip install -e .[all]
+	rm -rf dist/ build/ *.egg-info/
+	find . -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete

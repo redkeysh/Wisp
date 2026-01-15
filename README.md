@@ -35,6 +35,29 @@ pip install git+https://github.com/redkeysh/wisp.git[db]
 pip install git+https://github.com/redkeysh/wisp.git[all]
 ```
 
+## Development
+
+For local development, set up your environment and run checks:
+
+```bash
+# Setup development environment
+./scripts/setup-dev.sh
+
+# Or manually:
+make install-dev
+make install-test
+
+# Run checks locally (replicates CI)
+make ci              # Run lint + format + tests
+make lint            # Run linter only
+make format          # Format code
+make test-cov        # Run tests with coverage
+./scripts/dev.sh     # Alternative: use dev script
+
+# See all available targets
+make help
+```
+
 ## Documentation
 
 📚 **Complete documentation is available in the [Wiki](https://github.com/redkeysh/wisp/wiki)**.
