@@ -79,3 +79,4 @@ dmypy.json
 dev-notes/
 wiki/
 
+coverage.xml

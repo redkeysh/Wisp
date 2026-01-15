@@ -26,24 +26,11 @@ classifiers = [
 dependencies = [
     "discord.py>=2.6.4",
     "sqlalchemy>=2.0.45",
-]
-
-[project.optional-dependencies]
-db = [
     "asyncpg>=0.31.0",
     "alembic>=1.18.1",
-]
-redis = [
     "redis>=7.1.0",
-]
-metrics = [
     "prometheus-client>=0.24.1",
-]
-monitoring = [
     "sentry-sdk>=2.49.0",
-]
-all = [
-    "wisp-framework[db,redis,metrics,monitoring]",
 ]
 
 [project.scripts]

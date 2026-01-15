@@ -50,14 +50,9 @@ check_python() {
 
 # Install dependencies
 install_deps() {
-    local extras="${1:-}"
-    print_status "Installing dependencies${extras:+ with extras: $extras}"
+    print_status "Installing dependencies..."
     python3 -m pip install --upgrade pip --quiet
-    if [ -n "$extras" ]; then
-        pip install -e ".$extras" --quiet
-    else
-        pip install -e . --quiet
-    fi
+    pip install -e . --quiet
     pip install pytest pytest-asyncio pytest-cov ruff build --quiet
 }
 
@@ -87,8 +82,7 @@ run_format_check() {
 
 # Run tests
 run_tests() {
-    local extras="${1:-}"
-    local test_name="${2:-Tests}"
+    local test_name="${1:-Tests}"
     
     print_status "Running $test_name..."
     if pytest tests/ -v --cov=src --cov-report=term --cov-report=xml; then
@@ -115,18 +109,11 @@ run_ci() {
         failed=1
     fi
     
-    # Tests with base installation
-    print_status "Installing base dependencies..."
-    install_deps ""
-    if ! run_tests "" "Base tests"; then
+    # Run tests
+    print_status "Installing dependencies..."
+    install_deps
+    if ! run_tests "Tests"; then
         failed=1
-    fi
-    
-    # Tests with db extras (non-fatal)
-    print_status "Installing [db] extras..."
-    install_deps "[db]"
-    if ! run_tests "[db]" "Database tests"; then
-        print_warning "Database tests failed (non-fatal)"
     fi
     
     if [ $failed -eq 0 ]; then
@@ -158,35 +145,27 @@ main() {
     
     case "${1:-all}" in
         lint)
-            install_deps ""
+            install_deps
             run_lint
             ;;
         format)
-            install_deps ""
+            install_deps
             print_status "Formatting code..."
             ruff format src/
             print_status "Formatting complete ✓"
             ;;
         format-check)
-            install_deps ""
+            install_deps
             run_format_check
             ;;
         check)
-            install_deps ""
+            install_deps
             run_lint
             run_format_check
             ;;
         test)
-            install_deps ""
-            run_tests "" "Tests"
-            ;;
-        test-db)
-            install_deps "[db]"
-            run_tests "[db]" "Database tests"
-            ;;
-        test-all)
-            install_deps "[all]"
-            run_tests "[all]" "All tests"
+            install_deps
+            run_tests "Tests"
             ;;
         build)
             build_package

@@ -15,7 +15,7 @@ Welcome to **Wisp Framework** — a production-grade, modular Discord bot framew
 Wisp Framework provides a clean, extensible architecture for building Discord bots with:
 
 - 🧩 **Modular Design** - Create reusable modules with per-guild enable/disable support
-- 🗄️ **Optional Database** - SQLAlchemy 2.x async support with graceful degradation
+- 🗄️ **Database Support** - SQLAlchemy 2.x async support with asyncpg
 - 🔧 **Service Container** - Built-in services (cache, metrics, scheduler, audit, webhook logger)
 - 📊 **Per-Guild Data** - Automatic support for storing stats/data per guild
 - 🚀 **Production Ready** - Docker support, health checks, graceful shutdown, connection pooling
@@ -27,12 +27,6 @@ Wisp Framework provides a clean, extensible architecture for building Discord bo
 ```bash
 # Install from GitHub
 pip install git+https://github.com/redkeysh/wisp.git
-
-# With database support
-pip install git+https://github.com/redkeysh/wisp.git[db]
-
-# With all extras
-pip install git+https://github.com/redkeysh/wisp.git[all]
 ```
 
 ## Development

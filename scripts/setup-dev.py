@@ -31,7 +31,7 @@ def main():
     # Install development dependencies
     print(">>> Installing development dependencies...")
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-e", ".[all]", "--quiet"],
+        [sys.executable, "-m", "pip", "install", "-e", ".", "--quiet"],
         check=False,
     )
     subprocess.run(
@@ -43,11 +43,10 @@ def main():
     print(">>> Development environment setup complete!")
     print()
     print("Available commands:")
-    print("  python scripts/dev.py lint      - Run linter")
+    print("  python scripts/dev.py lint       - Run linter")
     print("  python scripts/dev.py format     - Format code")
     print("  python scripts/dev.py check      - Run lint + format checks")
     print("  python scripts/dev.py test       - Run tests")
-    print("  python scripts/dev.py test-cov   - Run tests with coverage")
     print("  python scripts/dev.py ci         - Run full CI checks")
     print()
     print("Or use Makefile targets (if make is installed):")

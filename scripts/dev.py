@@ -88,9 +88,9 @@ def check_python() -> bool:
     return True
 
 
-def install_deps(extras: str = "") -> bool:
+def install_deps() -> bool:
     """Install dependencies."""
-    print_status(f"Installing dependencies{extras and f' with extras: {extras}' or ''}...")
+    print_status("Installing dependencies...")
     
     # Upgrade pip
     code, _ = run_command([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], check=False)
@@ -98,10 +98,10 @@ def install_deps(extras: str = "") -> bool:
         print_warning("Failed to upgrade pip, continuing anyway...")
     
     # Install package
-    install_cmd = [sys.executable, "-m", "pip", "install", "-e", f".{extras}", "--quiet"]
+    install_cmd = [sys.executable, "-m", "pip", "install", "-e", ".", "--quiet"]
     code, _ = run_command(install_cmd, check=False)
     if code != 0:
-        print_error(f"Failed to install package{extras}")
+        print_error("Failed to install package")
         return False
     
     # Install test dependencies
@@ -155,7 +155,7 @@ def run_format() -> bool:
         return False
 
 
-def run_tests(extras: str = "", test_name: str = "Tests") -> bool:
+def run_tests(test_name: str = "Tests") -> bool:
     """Run tests."""
     print_status(f"Running {test_name}...")
     code, _ = run_command(
@@ -209,18 +209,12 @@ def run_ci() -> bool:
     if not run_format_check():
         failed = True
     
-    # Tests with base installation
-    print_status("Installing base dependencies...")
-    if not install_deps(""):
+    # Run tests
+    print_status("Installing dependencies...")
+    if not install_deps():
         failed = True
-    elif not run_tests("", "Base tests"):
+    elif not run_tests("Tests"):
         failed = True
-    
-    # Tests with db extras (non-fatal)
-    print_status("Installing [db] extras...")
-    if install_deps("[db]"):
-        if not run_tests("[db]", "Database tests"):
-            print_warning("Database tests failed (non-fatal)")
     
     if not failed:
         print_status("All CI checks passed! ✓")
@@ -249,7 +243,7 @@ def main() -> int:
         "command",
         nargs="?",
         default="ci",
-        choices=["lint", "format", "format-check", "check", "test", "test-db", "test-all", "build", "ci", "all"],
+        choices=["lint", "format", "format-check", "check", "test", "build", "ci", "all"],
         help="Command to run (default: ci)",
     )
     
@@ -261,41 +255,31 @@ def main() -> int:
     command = args.command
     
     if command == "lint":
-        if not install_deps(""):
+        if not install_deps():
             return 1
         return 0 if run_lint() else 1
     
     elif command == "format":
-        if not install_deps(""):
+        if not install_deps():
             return 1
         return 0 if run_format() else 1
     
     elif command == "format-check":
-        if not install_deps(""):
+        if not install_deps():
             return 1
         return 0 if run_format_check() else 1
     
     elif command == "check":
-        if not install_deps(""):
+        if not install_deps():
             return 1
         lint_ok = run_lint()
         format_ok = run_format_check()
         return 0 if (lint_ok and format_ok) else 1
     
     elif command == "test":
-        if not install_deps(""):
+        if not install_deps():
             return 1
-        return 0 if run_tests("", "Tests") else 1
-    
-    elif command == "test-db":
-        if not install_deps("[db]"):
-            return 1
-        return 0 if run_tests("[db]", "Database tests") else 1
-    
-    elif command == "test-all":
-        if not install_deps("[all]"):
-            return 1
-        return 0 if run_tests("[all]", "All tests") else 1
+        return 0 if run_tests("Tests") else 1
     
     elif command == "build":
         return 0 if build_package() else 1

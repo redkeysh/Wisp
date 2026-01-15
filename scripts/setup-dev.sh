@@ -27,7 +27,7 @@ python3 -m pip install --upgrade pip --quiet
 
 # Install development dependencies
 echo ">>> Installing development dependencies..."
-pip install -e ".[all]" --quiet
+pip install -e . --quiet
 pip install pytest pytest-asyncio pytest-cov ruff build --quiet
 
 echo ""
@@ -41,5 +41,6 @@ echo "  make test          - Run tests"
 echo "  make test-cov      - Run tests with coverage"
 echo "  make ci            - Run full CI checks"
 echo "  ./scripts/dev.sh   - Run dev script (same as make ci)"
+echo "  python scripts/dev.py - Python version (works on Windows)"
 echo ""
 echo "Or use: make help for all available targets"

@@ -11,9 +11,9 @@ install: ## Install package in development mode (base only)
 	python -m pip install --upgrade pip
 	pip install -e .
 
-install-dev: ## Install package with all extras
+install-dev: ## Install package in development mode
 	python -m pip install --upgrade pip
-	pip install -e .[all]
+	pip install -e .
 
 install-test: ## Install test dependencies
 	python -m pip install --upgrade pip
@@ -36,26 +36,6 @@ test: ## Run tests (base installation)
 test-cov: ## Run tests with coverage
 	pytest tests/ -v --cov=src --cov-report=term --cov-report=xml
 
-test-db: ## Run tests with database extras installed
-	pip install -e .[db] pytest pytest-asyncio pytest-cov
-	pytest tests/ -v --cov=src --cov-report=term
-
-test-all: ## Run tests with all extras installed
-	pip install -e .[all] pytest pytest-asyncio pytest-cov
-	pytest tests/ -v --cov=src --cov-report=term
-
-test-matrix: ## Run tests with all CI matrix combinations (base, db, all)
-	@echo "=== Testing with base installation ==="
-	@pip install -e . pytest pytest-asyncio pytest-cov || true
-	@pytest tests/ -v --cov=src --cov-report=term || true
-	@echo ""
-	@echo "=== Testing with [db] extras ==="
-	@pip install -e .[db] pytest pytest-asyncio pytest-cov || true
-	@pytest tests/ -v --cov=src --cov-report=term || true
-	@echo ""
-	@echo "=== Testing with [all] extras ==="
-	@pip install -e .[all] pytest pytest-asyncio pytest-cov || true
-	@pytest tests/ -v --cov=src --cov-report=term || true
 
 ci: check test-cov ## Run full CI checks locally (lint + format + test)
 
