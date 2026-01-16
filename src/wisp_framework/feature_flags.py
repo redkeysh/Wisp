@@ -103,3 +103,20 @@ class FeatureFlags:
                     result[module_name] = enabled
 
         return result
+
+    async def is_safe_mode(self) -> bool:
+        """Check if safe mode is enabled (framework-level flag).
+
+        Returns:
+            True if safe mode is enabled
+        """
+        # Safe mode is stored as a special feature flag with guild_id=0 (global)
+        return await self.is_enabled(0, "safe_mode", False)
+
+    async def set_safe_mode(self, enabled: bool) -> None:
+        """Set safe mode (framework-level flag).
+
+        Args:
+            enabled: Whether to enable safe mode
+        """
+        await self.set_enabled(0, "safe_mode", enabled)
