@@ -1,4 +1,4 @@
-"""Middleware system for commands."""
+"""Middleware system for commands (legacy - use core.pipeline for new code)."""
 
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -7,7 +7,7 @@ from discord import Interaction
 
 
 class Middleware:
-    """Base class for middleware."""
+    """Base class for middleware (legacy - use core.pipeline.Middleware for new code)."""
 
     async def process(
         self, interaction: Interaction, next_handler: Callable[[Interaction], Awaitable[Any]]
@@ -25,7 +25,7 @@ class Middleware:
 
 
 class MiddlewareChain:
-    """Chain of middleware to process interactions."""
+    """Chain of middleware to process interactions (legacy - use core.pipeline.Pipeline for new code)."""
 
     def __init__(self, *middlewares: Middleware) -> None:
         """Initialize middleware chain.
@@ -67,7 +67,7 @@ class MiddlewareChain:
 
 
 class LoggingMiddleware(Middleware):
-    """Middleware to log command execution."""
+    """Middleware to log command execution (legacy - use core.pipeline.RequestIdMiddleware)."""
 
     async def process(
         self, interaction: Interaction, next_handler: Callable[[Interaction], Awaitable[Any]]
@@ -84,7 +84,7 @@ class LoggingMiddleware(Middleware):
 
 
 class MetricsMiddleware(Middleware):
-    """Middleware to track command metrics."""
+    """Middleware to track command metrics (legacy - use core.pipeline.MetricsMiddleware)."""
 
     def __init__(self, metrics_service: Any) -> None:
         """Initialize metrics middleware.
