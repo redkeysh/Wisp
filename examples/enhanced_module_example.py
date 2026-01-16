@@ -3,14 +3,13 @@
 from typing import Any
 
 import discord
-from discord import app_commands
 
 from wisp_framework.module import Module
 from wisp_framework.utils.cooldowns import cooldown
 from wisp_framework.utils.decorators import handle_errors, require_admin, require_guild
 from wisp_framework.utils.embeds import EmbedBuilder
 from wisp_framework.utils.pagination import paginate_embeds
-from wisp_framework.utils.responses import respond_error, respond_success
+from wisp_framework.utils.responses import respond_success
 
 
 class EnhancedModule(Module):
@@ -48,7 +47,6 @@ class EnhancedModule(Module):
             embeds = []
             items_per_page = 10
             for i in range(0, len(items), items_per_page):
-                page_items = items[i : i + items_per_page]
                 embed = EmbedBuilder.list_embed(
                     title="Items List",
                     items=items,

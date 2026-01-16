@@ -19,8 +19,16 @@ from wisp_framework.module import Module
 from wisp_framework.registry import ModuleRegistry
 from wisp_framework.utils.permissions import is_admin
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+class BotConfig(AppConfig):
+    """Example bot-specific configuration extending AppConfig."""
+
+    @property
+    def feature_stats(self) -> bool:
+        """Whether stats module is enabled."""
+        return self._get_bool("FEATURE_STATS", True)
 
 
 class StatsModule(Module):
@@ -151,7 +159,8 @@ def main():
     """Main entry point."""
     try:
         # Load configuration
-        config = AppConfig()
+        # Using custom config class that extends AppConfig
+        config = BotConfig()
         setup_logging(config)
 
         logger.info("Starting complete bot example...")
@@ -166,12 +175,14 @@ def main():
         module_registry = ModuleRegistry(feature_flags)
 
         # Register custom modules
-        module_registry.register(StatsModule())
+        if config.feature_stats:
+            module_registry.register(StatsModule())
         module_registry.register(CacheExampleModule())
 
         # Register built-in modules
-        from wisp_framework.modules.ping import PingModule
+        # These include prefixed commands (!ping, !sync) that work automatically
         from wisp_framework.modules.core_admin import CoreAdminModule
+        from wisp_framework.modules.ping import PingModule
 
         module_registry.register(PingModule())
         module_registry.register(CoreAdminModule())
@@ -183,6 +194,8 @@ def main():
         lifecycle = LifecycleManager()
 
         # Start bot
+        # Commands will sync automatically on startup (SYNC_ON_STARTUP=true by default)
+        # You can disable with SYNC_ON_STARTUP=false or use !sync command manually
         async def run():
             bot = await lifecycle.startup(config, services, module_registry, ctx)
             await bot.start(config.discord_token)
