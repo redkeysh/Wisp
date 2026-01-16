@@ -62,7 +62,8 @@ def setup_logging(
     # Ensure handler has formatter and filter
     if handler.formatter is None:
         handler.setFormatter(formatter)
-    if not any(isinstance(f, CorrelationFilter) for f in handler.filters.values()):
+    # handler.filters is a list, not a dict, so iterate directly
+    if not any(isinstance(f, CorrelationFilter) for f in handler.filters):
         handler.addFilter(CorrelationFilter())
 
     # Root logger
