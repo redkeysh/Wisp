@@ -1,8 +1,7 @@
 """Database models for the Wisp Framework."""
 
-from typing import Any
-
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB

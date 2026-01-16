@@ -359,12 +359,11 @@ async def export_command(config: AppConfig, output_file: Path) -> int:
     }
 
     # Export plugin states
-    from wisp_framework.feature_flags import FeatureFlags
-    from wisp_framework.plugins.registry import PluginRegistry
 
     db_service = services.get_typed("db", DatabaseService)
     if db_service:
         from sqlalchemy import select
+
         from wisp_framework.db.models import PluginState, PolicyRule
 
         async with db_service.session_factory() as session:
@@ -431,6 +430,8 @@ async def import_command(config: AppConfig, input_file: Path, dry_run: bool = Fa
 
         async with db_service.session_factory() as session:
             if not dry_run:
+                from sqlalchemy import select
+
                 # Import plugin states
                 for plugin_data in import_data.get("plugins", []):
                     stmt = select(PluginState).where(
@@ -495,15 +496,15 @@ def main() -> None:
     )
 
     # Doctor command
-    doctor_parser = subparsers.add_parser("doctor", help="Validate system health")
+    subparsers.add_parser("doctor", help="Validate system health")
 
     # Migrate command
-    migrate_parser = subparsers.add_parser("migrate", help="Run database migrations")
+    subparsers.add_parser("migrate", help="Run database migrations")
 
     # Plugins commands
     plugins_parser = subparsers.add_parser("plugins", help="Manage plugins")
     plugins_subparsers = plugins_parser.add_subparsers(dest="plugins_command", help="Plugin command")
-    plugins_list_parser = plugins_subparsers.add_parser("list", help="List plugins")
+    plugins_subparsers.add_parser("list", help="List plugins")
     plugins_enable_parser = plugins_subparsers.add_parser("enable", help="Enable plugin")
     plugins_enable_parser.add_argument("name", help="Plugin name")
     plugins_enable_parser.add_argument("--guild", type=int, help="Guild ID")

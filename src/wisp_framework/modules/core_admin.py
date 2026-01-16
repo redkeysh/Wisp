@@ -13,7 +13,6 @@ from wisp_framework.utils.context_helpers import (
 )
 from wisp_framework.utils.decorators import (
     handle_errors,
-    require_admin,
     require_guild,
     require_owner,
 )

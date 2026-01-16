@@ -149,8 +149,8 @@ class RateLimitMiddleware:
                 self._limiter = TokenBucketLimiter(cache_service)
 
         if self._limiter:
-            from wisp_framework.ratelimit.limiter import get_rate_limit_key
             from wisp_framework.exceptions import RateLimitedError
+            from wisp_framework.ratelimit.limiter import get_rate_limit_key
 
             # Check rate limit for user
             key = get_rate_limit_key(ctx, "user")

@@ -54,14 +54,14 @@ class Plugin(ABC):
         """Plugin dependencies (other plugin names)."""
         return self.manifest.dependencies
 
-    async def on_load(self, app: Any, services: Any) -> None:
+    async def on_load(self, app: Any, services: Any) -> None:  # noqa: B027
         """Called when the plugin is loaded (before enable).
 
         Args:
             app: Application instance (bot)
             services: Service container
         """
-        pass
+        ...
 
     @abstractmethod
     async def setup(self, bot: Any, ctx: Any) -> None:
@@ -74,36 +74,36 @@ class Plugin(ABC):
             bot: The Discord bot instance
             ctx: Bot context with services and config
         """
-        pass
+        ...
 
-    async def on_enable(self, guild_id: int | None) -> None:
+    async def on_enable(self, guild_id: int | None) -> None:  # noqa: B027
         """Called when plugin is enabled for a guild.
 
         Args:
             guild_id: Guild ID (None for global)
         """
-        pass
+        ...
 
-    async def on_disable(self, guild_id: int | None) -> None:
+    async def on_disable(self, guild_id: int | None) -> None:  # noqa: B027
         """Called when plugin is disabled for a guild.
 
         Args:
             guild_id: Guild ID (None for global)
         """
-        pass
+        ...
 
-    async def teardown(self, bot: Any, ctx: Any) -> None:
+    async def teardown(self, bot: Any, ctx: Any) -> None:  # noqa: B027
         """Tear down the plugin (called when disabled).
 
         Args:
             bot: The Discord bot instance
             ctx: Bot context with services and config
         """
-        pass
+        ...
 
-    async def on_unload(self) -> None:
+    async def on_unload(self) -> None:  # noqa: B027
         """Called when the plugin is unloaded.
 
         This is called during bot shutdown or when the plugin is removed.
         """
-        pass
+        ...

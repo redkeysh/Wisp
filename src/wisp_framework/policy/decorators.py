@@ -7,9 +7,6 @@ from typing import Any
 import discord
 from discord.ext import commands
 
-from wisp_framework.exceptions import PermissionError
-from wisp_framework.policy.engine import PolicyEngine
-
 
 def requires_capability(capability: str):
     """Decorator to require a capability for command execution.

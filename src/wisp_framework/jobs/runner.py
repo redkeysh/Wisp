@@ -3,7 +3,8 @@
 import asyncio
 import logging
 import uuid
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from wisp_framework.context import WispContext
 from wisp_framework.db.models import Job
@@ -122,7 +123,6 @@ class JobRunner(BaseService):
 
             # Create WispContext for job execution
             from wisp_framework.config import AppConfig
-            from wisp_framework.services.base import ServiceContainer
 
             # Get services
             config = self.config if isinstance(self.config, AppConfig) else AppConfig()
@@ -143,7 +143,7 @@ class JobRunner(BaseService):
 
             # Execute handler
             ctx.bound_logger.info(f"Processing job {job.id} of type '{job.job_type}'")
-            result = await handler(ctx, job.payload)
+            await handler(ctx, job.payload)
 
             # Mark as completed
             await self._job_queue.mark_completed(job)

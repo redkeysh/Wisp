@@ -2,7 +2,7 @@
 
 import logging
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from wisp_framework.context import WispContext
@@ -216,7 +216,7 @@ class EventRouter:
                     feature_flags=ctx.feature_flags,
                 )
                 # Store event_name as attribute for metrics middleware
-                setattr(handler_ctx, "event_name", event_name)
+                handler_ctx.event_name = event_name
 
                 # Create handler wrapper that captures handler_obj and event properly
                 # Use default parameter to avoid closure issues

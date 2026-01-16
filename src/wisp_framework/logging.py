@@ -116,7 +116,7 @@ class CorrelationContext:
             _correlation_id_var.reset(self._token)
 
 
-def get_logger(ctx: "WispContext") -> logging.Logger:
+def get_context_logger(ctx: "WispContext") -> logging.Logger:
     """Get a logger bound to the WispContext with request_id.
 
     This is a convenience wrapper that uses the observability module.

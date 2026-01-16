@@ -69,15 +69,15 @@ class WispContext(BotContext):
         self._feature_flags = feature_flags
         self._bound_logger: logging.Logger | None = None
         self._db_session: Any | None = None
-        self._policy: "PolicyEngine | None" = None
+        self._policy: PolicyEngine | None = None
 
     @property
     def bound_logger(self) -> logging.Logger:
         """Get logger bound with request_id context."""
         if self._bound_logger is None:
-            from wisp_framework.observability.logging import get_logger
+            from wisp_framework.logging import get_context_logger
 
-            self._bound_logger = get_logger(self)
+            self._bound_logger = get_context_logger(self)
         return self._bound_logger
 
     @property

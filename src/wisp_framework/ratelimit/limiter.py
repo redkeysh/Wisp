@@ -2,7 +2,6 @@
 
 import logging
 import time
-from typing import Any
 
 from wisp_framework.context import WispContext
 from wisp_framework.services.cache import CacheService

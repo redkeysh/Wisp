@@ -4,10 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from alembic import script
 from alembic.config import Config
-from alembic.runtime.migration import MigrationContext
-from alembic.script import ScriptDirectory
 
 logger = logging.getLogger(__name__)
 
