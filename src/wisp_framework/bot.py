@@ -54,18 +54,18 @@ class WispBot(commands.Bot):
         # This ensures prefixed commands are registered early
         await self.module_registry.load_enabled_modules(self, self.ctx, guild_id=None)
 
-        # Sync commands if configured
+    async def on_ready(self) -> None:
+        """Called when the bot is ready."""
+        logger.info(f"Bot ready: {self.user} (ID: {self.user.id if self.user else None})")
+        logger.info(f"Connected to {len(self.guilds)} guild(s)")
+
+        # Sync commands if configured (must happen after on_ready when application_id is available)
         if self.config.sync_on_startup:
             try:
                 synced = await self.tree.sync()
                 logger.info(f"Synced {len(synced)} command(s)")
             except Exception as e:
                 logger.error(f"Failed to sync commands: {e}", exc_info=True)
-
-    async def on_ready(self) -> None:
-        """Called when the bot is ready."""
-        logger.info(f"Bot ready: {self.user} (ID: {self.user.id if self.user else None})")
-        logger.info(f"Connected to {len(self.guilds)} guild(s)")
 
         # Load modules for each guild (for guild-specific features)
         for guild in self.guilds:
