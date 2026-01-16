@@ -30,9 +30,7 @@ class WispBot(commands.Bot):
         intents = config.intents
 
         # Set owner IDs for prefixed command owner checks
-        owner_ids = None
-        if config.owner_id:
-            owner_ids = [config.owner_id]
+        owner_ids = config.owner_ids if config.owner_ids else None
 
         super().__init__(command_prefix="!", intents=intents, owner_ids=owner_ids)
 
