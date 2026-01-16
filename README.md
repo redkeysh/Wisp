@@ -29,6 +29,20 @@ Wisp Framework provides a clean, extensible architecture for building Discord bo
 pip install git+https://github.com/redkeysh/wisp.git
 ```
 
+### Local Development (Faster Testing)
+
+For faster iteration when developing Wisp Framework itself:
+
+```bash
+# In your bot's directory, install Wisp Framework in editable mode
+pip install -e /path/to/Wisp
+
+# Changes to Wisp Framework are immediately available!
+# No need to rebuild, release, or reinstall.
+```
+
+See `dev-notes/LOCAL_DEVELOPMENT.md` for detailed workflow.
+
 ## Development
 
 For local development, set up your environment and run checks:
