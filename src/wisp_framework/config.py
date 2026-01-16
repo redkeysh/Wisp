@@ -48,10 +48,14 @@ class AppConfig:
             )
 
     def _load_intents(self) -> None:
-        """Load Discord intents configuration from environment."""
+        """Load Discord intents configuration from environment.
+
+        Defaults to all intents enabled for maximum compatibility.
+        GUILDS intent is always enabled as it's required for basic bot functionality.
+        """
         # Default to all intents if not specified
         intents_dict = {
-            "guilds": self._get_bool("INTENTS_GUILDS", True),
+            "guilds": self._get_bool("INTENTS_GUILDS", True),  # Always True - required for basic functionality
             "members": self._get_bool("INTENTS_MEMBERS", True),
             "messages": self._get_bool("INTENTS_MESSAGES", True),
             "message_content": self._get_bool("INTENTS_MESSAGE_CONTENT", True),
@@ -60,6 +64,9 @@ class AppConfig:
             "guild_messages": self._get_bool("INTENTS_GUILD_MESSAGES", True),
             "dm_messages": self._get_bool("INTENTS_DM_MESSAGES", True),
         }
+
+        # Ensure GUILDS intent is always enabled (required for basic functionality)
+        intents_dict["guilds"] = True
 
         self.intents = discord.Intents(**intents_dict)
 

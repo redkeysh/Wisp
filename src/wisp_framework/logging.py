@@ -19,8 +19,17 @@ class CorrelationFilter(logging.Filter):
         return True
 
 
-def setup_logging(config: AppConfig) -> None:
+def setup_logging(
+    config: AppConfig,
+    formatter: logging.Formatter | None = None,
+    handler: logging.Handler | None = None,
+) -> None:
     """Set up structured logging with module awareness.
+
+    Args:
+        config: Application configuration
+        formatter: Optional custom formatter. If not provided, uses default structured formatter.
+        handler: Optional custom handler. If not provided, uses StreamHandler to stdout.
 
     Log levels can be controlled via environment variables:
     - LOG_LEVEL: Root log level (default: INFO)
@@ -36,22 +45,30 @@ def setup_logging(config: AppConfig) -> None:
     wisp_log_level_str = os.getenv("LOG_LEVEL_WISP_FRAMEWORK", root_log_level_str).upper()
     wisp_log_level = getattr(logging, wisp_log_level_str, root_log_level)
 
-    # Create formatter
-    formatter = logging.Formatter(
-        fmt="%(asctime)s [%(levelname)8s] [%(name)s] [%(correlation_id)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    # Create formatter if not provided
+    if formatter is None:
+        formatter = logging.Formatter(
+            fmt="%(asctime)s [%(levelname)8s] [%(name)s] [%(correlation_id)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(root_log_level)
-    console_handler.setFormatter(formatter)
-    console_handler.addFilter(CorrelationFilter())
+    # Create handler if not provided
+    if handler is None:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(root_log_level)
+        handler.setFormatter(formatter)
+        handler.addFilter(CorrelationFilter())
+
+    # Ensure handler has formatter and filter
+    if handler.formatter is None:
+        handler.setFormatter(formatter)
+    if not any(isinstance(f, CorrelationFilter) for f in handler.filters.values()):
+        handler.addFilter(CorrelationFilter())
 
     # Root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(root_log_level)
-    root_logger.addHandler(console_handler)
+    root_logger.addHandler(handler)
 
     # Suppress noisy loggers
     logging.getLogger("discord").setLevel(logging.WARNING)

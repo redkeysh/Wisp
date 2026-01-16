@@ -24,8 +24,8 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('guild_id', sa.BigInteger(), nullable=False),
         sa.Column('welcome_channel_id', sa.BigInteger(), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('guild_id')
     )
@@ -38,8 +38,8 @@ def upgrade() -> None:
         sa.Column('guild_id', sa.BigInteger(), nullable=False),
         sa.Column('module_name', sa.String(length=100), nullable=False),
         sa.Column('enabled', sa.Boolean(), nullable=False),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
     )
     op.execute(sa.text("COMMENT ON TABLE module_states IS 'Tracks which modules are enabled/disabled per guild'"))
@@ -54,8 +54,8 @@ def upgrade() -> None:
         sa.Column('key', sa.String(length=255), nullable=False),
         sa.Column('value', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('module_name', sa.String(length=100), nullable=True),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.PrimaryKeyConstraint('id'),
     )
     op.execute(sa.text("COMMENT ON TABLE guild_data IS 'Generic key-value storage for per-guild data'"))
