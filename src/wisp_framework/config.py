@@ -193,6 +193,11 @@ class AppConfig:
         return os.getenv("LOG_LEVEL", "INFO").upper()
 
     @property
+    def logging_level(self) -> str:
+        """Logging level (alias for log_level for backward compatibility)."""
+        return self.log_level
+
+    @property
     def sync_on_startup(self) -> bool:
         """Whether to sync commands on startup."""
         return self._get_bool("SYNC_ON_STARTUP", True)
