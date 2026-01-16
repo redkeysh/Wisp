@@ -4,9 +4,64 @@ from typing import Any
 
 import discord
 
+from wisp_framework.config import AppConfig
+
 
 class EmbedBuilder:
-    """Builder for creating Discord embeds with common patterns."""
+    """Builder for creating Discord embeds with common patterns and branding support."""
+
+    _default_config: AppConfig | None = None
+
+    @classmethod
+    def set_default_config(cls, config: AppConfig) -> None:
+        """Set default config for branding.
+
+        Args:
+            config: AppConfig instance to use for branding
+        """
+        cls._default_config = config
+
+    @classmethod
+    def _apply_branding(
+        cls, embed: discord.Embed, config: AppConfig | None = None, footer: str | None = None
+    ) -> discord.Embed:
+        """Apply branding to an embed (footer, author, thumbnail).
+
+        Args:
+            embed: Embed to brand
+            config: AppConfig instance (uses default if not provided)
+            footer: Custom footer text (appends to branded footer if provided)
+
+        Returns:
+            Branded embed
+        """
+        cfg = config or cls._default_config
+        if not cfg:
+            if footer:
+                embed.set_footer(text=footer)
+            return embed
+
+        # Set author with app name and icon
+        author_name = cfg.app_name
+        if cfg.app_icon_url:
+            embed.set_author(name=author_name, icon_url=cfg.app_icon_url)
+        else:
+            embed.set_author(name=author_name)
+
+        # Set footer (combine custom footer with app name if needed)
+        footer_text = footer or cfg.app_footer_text or cfg.app_name
+        if footer and cfg.app_footer_text:
+            footer_text = f"{footer} • {cfg.app_footer_text}"
+        elif footer:
+            footer_text = f"{footer} • {cfg.app_name}"
+
+        embed.set_footer(text=footer_text)
+
+        # Set thumbnail if available
+        if cfg.app_icon_url:
+            embed.set_thumbnail(url=cfg.app_icon_url)
+
+        return embed
 
     @staticmethod
     def success(
@@ -14,6 +69,8 @@ class EmbedBuilder:
         description: str | None = None,
         fields: list[dict[str, Any]] | None = None,
         footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create a success embed (green).
 
@@ -38,7 +95,9 @@ class EmbedBuilder:
                     value=field.get("value", ""),
                     inline=field.get("inline", False),
                 )
-        if footer:
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=footer)
+        elif footer:
             embed.set_footer(text=footer)
         return embed
 
@@ -48,6 +107,8 @@ class EmbedBuilder:
         description: str | None = None,
         fields: list[dict[str, Any]] | None = None,
         footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create an error embed (red).
 
@@ -72,7 +133,9 @@ class EmbedBuilder:
                     value=field.get("value", ""),
                     inline=field.get("inline", False),
                 )
-        if footer:
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=footer)
+        elif footer:
             embed.set_footer(text=footer)
         return embed
 
@@ -82,6 +145,8 @@ class EmbedBuilder:
         description: str | None = None,
         fields: list[dict[str, Any]] | None = None,
         footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create an info embed (blue).
 
@@ -106,7 +171,9 @@ class EmbedBuilder:
                     value=field.get("value", ""),
                     inline=field.get("inline", False),
                 )
-        if footer:
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=footer)
+        elif footer:
             embed.set_footer(text=footer)
         return embed
 
@@ -116,6 +183,8 @@ class EmbedBuilder:
         description: str | None = None,
         fields: list[dict[str, Any]] | None = None,
         footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create a warning embed (orange).
 
@@ -140,7 +209,9 @@ class EmbedBuilder:
                     value=field.get("value", ""),
                     inline=field.get("inline", False),
                 )
-        if footer:
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=footer)
+        elif footer:
             embed.set_footer(text=footer)
         return embed
 
@@ -152,6 +223,8 @@ class EmbedBuilder:
         items_per_page: int = 10,
         page: int = 1,
         footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create a paginated list embed.
 
@@ -186,10 +259,12 @@ class EmbedBuilder:
             embed.description = (description or "") + "\n\n*No items to display.*"
 
         page_footer = f"Page {page}/{total_pages}"
-        if footer:
-            embed.set_footer(text=f"{footer} • {page_footer}")
+        combined_footer = f"{footer} • {page_footer}" if footer else page_footer
+
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=combined_footer)
         else:
-            embed.set_footer(text=page_footer)
+            embed.set_footer(text=combined_footer)
 
         return embed
 
@@ -199,6 +274,9 @@ class EmbedBuilder:
         headers: list[str],
         rows: list[list[str]],
         description: str | None = None,
+        footer: str | None = None,
+        config: AppConfig | None = None,
+        use_branding: bool = True,
     ) -> discord.Embed:
         """Create a table-style embed.
 
@@ -242,6 +320,11 @@ class EmbedBuilder:
 
         table_text = "```\n" + "\n".join(table_lines) + "\n```"
         embed.add_field(name="\u200b", value=table_text, inline=False)
+
+        if use_branding:
+            embed = EmbedBuilder._apply_branding(embed, config=config, footer=footer)
+        elif footer:
+            embed.set_footer(text=footer)
 
         return embed
 

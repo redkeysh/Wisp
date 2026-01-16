@@ -307,8 +307,18 @@ class AppConfig:
     # App metadata (for bot-level use, but provided here for convenience)
     @property
     def app_name(self) -> str:
-        """Application name."""
-        return os.getenv("APP_NAME", "wisp-bot")
+        """Application name for branding (defaults to 'Wisp Bot')."""
+        return os.getenv("APP_NAME", "Wisp Bot")
+
+    @property
+    def app_icon_url(self) -> str | None:
+        """Application icon URL for embeds (optional)."""
+        return os.getenv("APP_ICON_URL")
+
+    @property
+    def app_footer_text(self) -> str | None:
+        """Custom footer text for embeds (optional, defaults to app_name)."""
+        return os.getenv("APP_FOOTER_TEXT")
 
     @property
     def app_env(self) -> str:
