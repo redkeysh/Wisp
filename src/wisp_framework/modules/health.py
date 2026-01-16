@@ -5,6 +5,7 @@ from typing import Any
 import discord
 
 from wisp_framework.module import Module
+from wisp_framework.utils.context_helpers import get_wisp_context_from_interaction
 from wisp_framework.utils.decorators import handle_errors
 from wisp_framework.utils.embeds import EmbedBuilder
 from wisp_framework.utils.responses import respond_error, respond_success
@@ -26,7 +27,11 @@ class HealthModule(Module):
         @handle_errors
         async def health_command(interaction: discord.Interaction) -> None:
             """Health check command."""
-            health_service = ctx.services.get("health")
+            # Create WispContext for this command execution
+            wisp_ctx = get_wisp_context_from_interaction(bot, interaction, "slash")
+            wisp_ctx.bound_logger.debug("Executing health command")
+
+            health_service = wisp_ctx.services.get("health")
 
             if not health_service:
                 await respond_error(interaction, "Health service not available.")
@@ -36,7 +41,7 @@ class HealthModule(Module):
             health_status = health_service.get_health()
 
             # Check database health dynamically
-            db_service = ctx.services.get("db")
+            db_service = wisp_ctx.services.get("db")
             if db_service:
                 db_healthy = db_service.engine is not None and db_service.initialized
                 health_status["services"]["db"] = {"healthy": db_healthy}
@@ -62,17 +67,26 @@ class HealthModule(Module):
                     "inline": False
                 })
 
-            # Add bot metrics if available
-            metrics_service = ctx.services.get("metrics")
-            if metrics_service:
-                metrics = metrics_service.get_metrics()
+            # Add bot metrics if available (using WispContext)
+            if wisp_ctx.metrics:
+                metrics = wisp_ctx.metrics.get_metrics()
                 if metrics["counters"]:
-                    total_commands = metrics["counters"].get("commands.executed", 0)
+                    # Use normalized metric names
+                    from wisp_framework.observability.metrics import normalize_metric_name
+
+                    total_commands = metrics["counters"].get(
+                        normalize_metric_name("commands", "success"), 0
+                    )
                     fields.append({
                         "name": "Commands Executed",
                         "value": str(total_commands),
                         "inline": True
                     })
+
+            # Log health check with request_id
+            wisp_ctx.bound_logger.info(
+                f"Health check completed: {'healthy' if all_healthy else 'unhealthy'}"
+            )
 
             # Create appropriate embed based on health
             if health_status["healthy"]:

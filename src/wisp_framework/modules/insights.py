@@ -24,10 +24,15 @@ class InsightsModule(Module):
 
         async def periodic_rollup() -> None:
             """Periodic task for insights aggregation."""
-            import logging
-            logger = logging.getLogger(__name__)
+            # Create WispContext for job execution
+            from wisp_framework.context import WispContext
 
-            logger.info("Running insights rollup...")
+            wisp_ctx = WispContext.from_job(
+                config=bot.config,
+                services=bot.services,
+                job_id="insights_rollup",
+            )
+            wisp_ctx.bound_logger.info("Running insights rollup...")
 
             if ctx.guild_data:
                 # Aggregate stats per guild
@@ -46,16 +51,20 @@ class InsightsModule(Module):
                             module_name="insights",
                         )
 
-                        # Update metrics if available
-                        metrics = ctx.services.get("metrics")
-                        if metrics:
-                            metrics.increment("insights.rollups")
-                            metrics.gauge(f"insights.guild_{guild.id}.rollup_count", current + 1)
+                        # Update metrics using WispContext
+                        if wisp_ctx.metrics:
+                            from wisp_framework.observability.metrics import normalize_metric_name
+
+                            wisp_ctx.metrics.increment(normalize_metric_name("insights", "rollups"))
+                            wisp_ctx.metrics.gauge(
+                                normalize_metric_name("insights", f"guild_{guild.id}_rollup_count"),
+                                current + 1,
+                            )
 
                     except Exception as e:
-                        logger.error(f"Error in rollup for guild {guild.id}: {e}")
+                        wisp_ctx.bound_logger.error(f"Error in rollup for guild {guild.id}: {e}", exc_info=True)
 
-            logger.info("Insights rollup completed")
+            wisp_ctx.bound_logger.info("Insights rollup completed")
 
         if scheduler:
             # Register a daily rollup (86400 seconds)

@@ -6,6 +6,10 @@ import discord
 from discord.ext import commands
 
 from wisp_framework.module import Module
+from wisp_framework.utils.context_helpers import (
+    get_wisp_context_from_command_context,
+    get_wisp_context_from_interaction,
+)
 from wisp_framework.utils.decorators import handle_errors
 from wisp_framework.utils.embeds import EmbedBuilder
 from wisp_framework.utils.responses import respond_success
@@ -27,6 +31,10 @@ class PingModule(Module):
         @handle_errors
         async def ping_command(interaction: discord.Interaction) -> None:
             """Ping command handler."""
+            # Create WispContext for this command execution
+            wisp_ctx = get_wisp_context_from_interaction(bot, interaction, "slash")
+            wisp_ctx.bound_logger.debug("Executing ping command")
+
             latency = round(bot.latency * 1000)
 
             # Determine status color based on latency
@@ -68,12 +76,22 @@ class PingModule(Module):
                     description=f"Latency: **{latency}ms**\nStatus: {status}",
                     fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
                 )
+
+            # Record metrics using WispContext
+            if wisp_ctx.metrics:
+                from wisp_framework.observability.metrics import record_command_metric
+
+                record_command_metric(wisp_ctx.metrics, "ping", "success")
 
             await respond_success(interaction, f"Pong! Latency: {latency}ms", embed=embed)
 
         # Prefixed ping command
         async def ping_prefixed_command(ctx: commands.Context) -> None:
             """Ping command handler (prefixed)."""
+            # Create WispContext for this command execution
+            wisp_ctx = get_wisp_context_from_command_context(bot, ctx)
+            wisp_ctx.bound_logger.debug("Executing ping command (prefix)")
+
             latency = round(bot.latency * 1000)
 
             # Determine status color based on latency
@@ -115,6 +133,12 @@ class PingModule(Module):
                     description=f"Latency: **{latency}ms**\nStatus: {status}",
                     fields=[{"name": "Response Time", "value": f"{latency}ms", "inline": True}]
                 )
+
+            # Record metrics using WispContext
+            if wisp_ctx.metrics:
+                from wisp_framework.observability.metrics import record_command_metric
+
+                record_command_metric(wisp_ctx.metrics, "ping", "success")
 
             await ctx.send(embed=embed)
 

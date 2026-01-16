@@ -17,6 +17,7 @@ from wisp_framework.services.health import HealthService
 from wisp_framework.services.metrics import MetricsService
 from wisp_framework.services.scheduler import SchedulerService
 from wisp_framework.services.webhook_logger import WebhookLoggerService
+from wisp_framework.utils.embeds import EmbedBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,9 @@ class LifecycleManager:
     ) -> WispBot:
         """Start up the bot and all services."""
         logger.info("Starting bot lifecycle...")
+
+        # Set default config for embed branding
+        EmbedBuilder.set_default_config(config)
 
         # Start all services
         await services.startup_all()
@@ -92,6 +96,11 @@ class LifecycleManager:
 
 def create_services(config: AppConfig) -> ServiceContainer:
     """Create and register all services."""
+    # Initialize Sentry early for error tracking
+    from wisp_framework.observability.sentry import init_sentry
+
+    init_sentry(config)
+
     services = ServiceContainer(config)
 
     # Core services (always available)
@@ -115,6 +124,26 @@ def create_services(config: AppConfig) -> ServiceContainer:
 
     # Register database health (will be updated when DB starts)
     health_service.register_service("db", {"healthy": False})
+
+    # Policy engine (requires database)
+    from wisp_framework.policy.engine import PolicyEngine
+
+    policy_engine = PolicyEngine(db_service)
+    services.register("policy", policy_engine)
+    health_service.register_service("policy", {"healthy": True})
+
+    # Job queue and runner (requires database)
+    from wisp_framework.jobs.queue import JobQueue
+    from wisp_framework.jobs.runner import JobRunner
+
+    job_queue = JobQueue(config, db_service)
+    services.register("job_queue", job_queue)
+    health_service.register_service("job_queue", {"healthy": True})
+
+    # Create runner after services are registered so it can access them
+    job_runner = JobRunner(config, job_queue, services)
+    services.register("job_runner", job_runner)
+    health_service.register_service("job_runner", {"healthy": True})
 
     return services
 
