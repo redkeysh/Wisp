@@ -1,21 +1,34 @@
 """Structured logging setup with module awareness and correlation IDs."""
 
+import contextvars
 import logging
 import sys
 import uuid
+from typing import TYPE_CHECKING
 
 from wisp_framework.config import AppConfig
 
+if TYPE_CHECKING:
+    from wisp_framework.context import WispContext
+
+# Context variable for correlation_id in async contexts
+_correlation_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("correlation_id", default=None)
+
 
 class CorrelationFilter(logging.Filter):
-    """Logging filter that adds correlation ID to log records."""
+    """Logging filter that adds correlation ID and request_id to log records."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """Add correlation ID if not already present."""
+        """Add correlation ID and request_id if not already present."""
         if not hasattr(record, "correlation_id"):
-            record.correlation_id = getattr(
-                logging.currentframe(), "correlation_id", None
-            )
+            correlation_id = _correlation_id_var.get()
+            record.correlation_id = correlation_id or "no-correlation-id"
+        if not hasattr(record, "request_id"):
+            # Try to get request_id from context variable (set by observability.logging)
+            from wisp_framework.observability.logging import _request_id_var
+
+            request_id = _request_id_var.get()
+            record.request_id = request_id or "no-request-id"
         return True
 
 
@@ -48,7 +61,7 @@ def setup_logging(
     # Create formatter if not provided
     if formatter is None:
         formatter = logging.Formatter(
-            fmt="%(asctime)s [%(levelname)8s] [%(name)s] [%(correlation_id)s] %(message)s",
+            fmt="%(asctime)s [%(levelname)8s] [%(name)s] [%(correlation_id)s] [%(request_id)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
 
@@ -85,30 +98,35 @@ def get_logger(name: str) -> logging.Logger:
 
 
 class CorrelationContext:
-    """Context manager for correlation IDs."""
+    """Context manager for correlation IDs using contextvars for async safety."""
 
     def __init__(self, correlation_id: str | None = None) -> None:
         """Initialize with optional correlation ID."""
         self.correlation_id = correlation_id or str(uuid.uuid4())
-        self.old_id: str | None = None
+        self._token: contextvars.Token[str | None] | None = None
 
     def __enter__(self) -> "CorrelationContext":
         """Enter context and set correlation ID."""
-        # Store in thread-local or context variable
-        # For simplicity, we'll use a module-level variable
-        # In production, consider using contextvars
-        import wisp_framework.logging as logging_module
-
-        self.old_id = getattr(logging_module, "_current_correlation_id", None)
-        logging_module._current_correlation_id = self.correlation_id
+        self._token = _correlation_id_var.set(self.correlation_id)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):  # type: ignore
         """Exit context and restore old correlation ID."""
-        import wisp_framework.logging as logging_module
+        if self._token is not None:
+            _correlation_id_var.reset(self._token)
 
-        if self.old_id is None:
-            if hasattr(logging_module, "_current_correlation_id"):
-                delattr(logging_module, "_current_correlation_id")
-        else:
-            logging_module._current_correlation_id = self.old_id
+
+def get_logger(ctx: "WispContext") -> logging.Logger:
+    """Get a logger bound to the WispContext with request_id.
+
+    This is a convenience wrapper that uses the observability module.
+
+    Args:
+        ctx: WispContext instance
+
+    Returns:
+        Logger instance with request_id in context
+    """
+    from wisp_framework.observability.logging import get_logger as _get_logger
+
+    return _get_logger(ctx)
