@@ -18,6 +18,9 @@ class ModuleRegistry:
         """Initialize the module registry."""
         self._modules: dict[str, Module] = {}
         self._feature_flags = feature_flags
+        # Track which modules have been set up per guild_id
+        # Key: (module_name, guild_id) where guild_id can be None for global
+        self._setup_complete: set[tuple[str, int | None]] = set()
 
     def register(self, module: Module) -> None:
         """Register a module."""
@@ -63,6 +66,22 @@ class ModuleRegistry:
         """Get a module by name."""
         return self._modules.get(name)
 
+    def reset_setup_state(self, module_name: str | None = None) -> None:
+        """Reset setup state for a module or all modules.
+
+        Args:
+            module_name: Module name to reset, or None to reset all modules
+        """
+        if module_name is None:
+            self._setup_complete.clear()
+            logger.debug("Reset setup state for all modules")
+        else:
+            # Remove all setup states for this module (all guilds)
+            self._setup_complete = {
+                (name, gid) for name, gid in self._setup_complete if name != module_name
+            }
+            logger.debug(f"Reset setup state for module '{module_name}'")
+
     async def load_enabled_modules(
         self, bot: Any, ctx: Any, guild_id: int | None = None
     ) -> None:
@@ -99,9 +118,35 @@ class ModuleRegistry:
                     )
                     continue
 
+            # Check if module has already been set up
+            # For global modules (guild_id=None), only set up once globally
+            # For guild-specific modules, check if already set up for this guild
+            # Also prevent re-setting up global modules when loading per-guild
+            if guild_id is None:
+                # Global setup - check if already set up globally
+                setup_key = (module_name, None)
+            else:
+                # Guild-specific setup - check if already set up for this guild
+                # Also check if module was already set up globally (most commands are global)
+                global_setup_key = (module_name, None)
+                if global_setup_key in self._setup_complete:
+                    logger.debug(
+                        f"Module '{module_name}' already set up globally, skipping guild {guild_id} setup"
+                    )
+                    continue
+                setup_key = (module_name, guild_id)
+
+            if setup_key in self._setup_complete:
+                logger.debug(
+                    f"Module '{module_name}' already set up for guild {guild_id}, skipping"
+                )
+                continue
+
             try:
-                logger.info(f"Loading module: {module_name}")
+                logger.info(f"Loading module: {module_name} (guild: {guild_id})")
                 await module.setup(bot, ctx)
+                # Mark module as set up for this guild
+                self._setup_complete.add(setup_key)
             except Exception as e:
                 logger.error(f"Failed to load module '{module_name}': {e}", exc_info=True)
 
